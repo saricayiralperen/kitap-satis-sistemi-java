@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kitaplar - AlperenBooks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/site.css" rel="stylesheet" />
+    
+    <style>
+        .book-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .book-image {
+            height: 250px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .book-price {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .filter-section {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .category-btn {
+            border-radius: 25px;
+            padding: 8px 16px;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .category-btn:hover,
+        .category-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .search-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        
+        .search-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search-input {
+            border-radius: 25px;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.1rem;
+        }
+        
+        .search-btn {
+            border-radius: 25px;
+            padding: 12px 25px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .search-btn:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+        
+        .sort-section {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .pagination-custom .page-link {
+            border-radius: 10px;
+            margin: 0 2px;
+            border: none;
+            color: var(--primary-color);
+        }
+        
+        .pagination-custom .page-item.active .page-link {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .results-info {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .sepet-count {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-book-fill"></i> AlperenBooks
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/">
+                            <i class="bi bi-house-fill"></i> Ana Sayfa
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link active" href="/kitaplar">
+                            <i class="bi bi-book"></i> Kitaplar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/kategori-listesi">
+                            <i class="bi bi-grid-3x3-gap"></i> Kategoriler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/favoriler">
+                            <i class="bi bi-heart"></i> Favorilerim
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/kullanici/login">
+                            <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/kullanici/register">
+                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="/sepet">
+                            <i class="bi bi-cart"></i> Sepetim
+                            <span class="sepet-count">0</span>
+                        </a>
+                    </li>
+                </ul>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="bi bi-moon-fill"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Section -->
+    <div class="search-section" style="margin-top: 80px;">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2><i class="bi bi-search"></i> Kitap Arama</h2>
+                <p>Geniş kitap koleksiyonumuzda aradığınızı bulun</p>
+            </div>
+            <form class="search-form" method="get" action="/kitaplar">
+                <div class="input-group">
+                    <input type="text" class="form-control search-input" name="search" 
+                           th:value="${search}" placeholder="Kitap adı, yazar adı...">
+                    <button class="btn search-btn" type="submit">
+                        <i class="bi bi-search"></i> Ara
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show" role="alert">
+            <span th:text="${infoMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h5><i class="bi bi-funnel"></i> Filtreler</h5>
+            <div class="category-filter">
+                <a href="/kitaplar" class="btn category-btn" 
+                   th:classappend="${kategoriId == null} ? 'active' : ''">
+                    <i class="bi bi-grid-3x3-gap"></i> Tüm Kategoriler
+                </a>
+                <a th:each="kategori : ${kategoriler}" 
+                   th:href="@{/kitaplar(kategoriId=${kategori.id})}" 
+                   class="btn category-btn"
+                   th:classappend="${kategoriId != null and kategoriId == kategori.id} ? 'active' : ''"
+                   th:text="${kategori.ad}">
+                </a>
+            </div>
+        </div>
+
+        <!-- Results Info -->
+        <div class="results-info" th:if="${kitapPage != null}">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i> 
+                        Toplam <span th:text="${kitapPage.totalElements}">0</span> kitap bulundu
+                        <span th:if="${search != null and !search.isEmpty()}">
+                            "<span th:text="${search}"></span>" için
+                        </span>
+                    </h6>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <label class="me-2">Sırala:</label>
+                        <select class="form-select" style="width: auto;" onchange="changeSorting(this.value)">
+                            <option value="id,asc" th:selected="${sortBy == 'id' and sortDir == 'asc'}">Varsayılan</option>
+                            <option value="ad,asc" th:selected="${sortBy == 'ad' and sortDir == 'asc'}">A-Z</option>
+                        <option value="ad,desc" th:selected="${sortBy == 'ad' and sortDir == 'desc'}">Z-A</option>
+                            <option value="fiyat,asc" th:selected="${sortBy == 'fiyat' and sortDir == 'asc'}">Fiyat (Düşük-Yüksek)</option>
+                            <option value="fiyat,desc" th:selected="${sortBy == 'fiyat' and sortDir == 'desc'}">Fiyat (Yüksek-Düşük)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Books Grid -->
+        <div class="row" th:if="${kitapPage != null and !kitapPage.isEmpty()}">
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4" th:each="kitap : ${kitapPage.content}">
+                <div class="card book-card h-100">
+                    <img th:src="${kitap.resimUrl != null ? kitap.resimUrl : '/images/no-image.jpg'}" 
+                         class="card-img-top book-image" 
+                         th:alt="${kitap.ad}">
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="card-title" th:text="${kitap.ad}">Kitap Başlığı</h6>
+                        <p class="card-text text-muted small mb-2" th:text="${kitap.yazar}">Yazar</p>
+                        <p class="card-text small mb-2">
+                            <span class="badge bg-secondary" th:text="${kitap.kategori.ad}">Kategori</span>
+                        </p>
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="book-price" th:text="${kitap.fiyat} + ' ₺'">0 ₺</span>
+                                <small class="text-muted" th:if="${kitap.stokMiktari > 0}">
+                                    <i class="bi bi-check-circle text-success"></i> Stokta
+                                </small>
+                                <small class="text-danger" th:if="${kitap.stokMiktari == 0}">
+                                    <i class="bi bi-x-circle"></i> Tükendi
+                                </small>
+                            </div>
+                            <div class="mt-2">
+                                <div class="d-flex gap-2">
+                                    <a th:href="@{/kitaplar/{id}(id=${kitap.id})}" class="btn btn-primary btn-sm flex-fill">
+                                        <i class="bi bi-eye"></i> Detay
+                                    </a>
+                                    <form action="/sepet/ekle" method="post" class="d-inline sepet-form">
+                                        <input type="hidden" name="kitapId" th:value="${kitap.id}" />
+                                        <input type="hidden" name="adet" value="1" />
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div class="text-center py-5" th:if="${kitapPage == null or kitapPage.isEmpty()}">
+            <i class="bi bi-search display-1 text-muted"></i>
+            <h3 class="mt-3">Kitap Bulunamadı</h3>
+            <p class="text-muted">Arama kriterlerinizi değiştirerek tekrar deneyin.</p>
+            <a href="/kitaplar" class="btn btn-primary">
+                <i class="bi bi-arrow-left"></i> Tüm Kitaplara Dön
+            </a>
+        </div>
+
+        <!-- Pagination -->
+        <nav th:if="${kitapPage != null and kitapPage.totalPages > 1}" class="mt-4">
+            <ul class="pagination pagination-custom justify-content-center">
+                <li class="page-item" th:classappend="${kitapPage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/kitaplar(page=${currentPage - 1}, search=${search}, kategoriId=${kategoriId}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                
+                <li th:each="pageNum : ${#numbers.sequence(0, kitapPage.totalPages - 1)}" 
+                    class="page-item" 
+                    th:classappend="${pageNum == currentPage} ? 'active'">
+                    <a class="page-link" 
+                       th:href="@{/kitaplar(page=${pageNum}, search=${search}, kategoriId=${kategoriId}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                       th:text="${pageNum + 1}">1</a>
+                </li>
+                
+                <li class="page-item" th:classappend="${kitapPage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/kitaplar(page=${currentPage + 1}, search=${search}, kategoriId=${kategoriId}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-book-fill"></i> AlperenBooks</h5>
+                    <p class="text-muted">En kaliteli kitapları en uygun fiyatlarla.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">&copy; 2024 AlperenBooks. Tüm hakları saklıdır.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/site.js"></script>
+    
+    <script>
+        function changeSorting(value) {
+            const [sortBy, sortDir] = value.split(',');
+            const url = new URL(window.location);
+            url.searchParams.set('sortBy', sortBy);
+            url.searchParams.set('sortDir', sortDir);
+            url.searchParams.set('page', '0'); // Reset to first page
+            window.location.href = url.toString();
+        }
+        
+        // Sepet sayacını güncelleme fonksiyonu
+        function updateCartCount() {
+            fetch('/sepet/count')
+                .then(response => response.json())
+                .then(count => {
+                    const sepetCountElements = document.querySelectorAll('.sepet-count');
+                    sepetCountElements.forEach(element => {
+                        element.textContent = count;
+                    });
+                })
+                .catch(error => {
+                    console.error('Sepet sayacı güncellenirken hata:', error);
+                });
+        }
+        
+        // Sayfa yüklendiğinde sepet sayacını güncelle
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sepet sayacını güncelle
+            updateCartCount();
+            
+            // Sepete ekleme formları için event listener ekle
+            const sepetForms = document.querySelectorAll('.sepet-form');
+            sepetForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Sayfa yenilenmesini engelle
+                    
+                    const formData = new FormData(form);
+                    const button = form.querySelector('button[type="submit"]');
+                    const originalText = button.textContent;
+                    
+                    // Buton durumunu değiştir
+                    button.disabled = true;
+                    button.textContent = 'Ekleniyor...';
+                    
+                    fetch('/sepet/ekle', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Başarılı ekleme
+                            button.textContent = 'Eklendi!';
+                            button.classList.remove('btn-primary');
+                            button.classList.add('btn-success');
+                            
+                            // Sepet sayacını güncelle
+                            updateCartCount();
+                            
+                            // 2 saniye sonra butonu eski haline getir
+                            setTimeout(() => {
+                                button.disabled = false;
+                                button.textContent = originalText;
+                                button.classList.remove('btn-success');
+                                button.classList.add('btn-primary');
+                            }, 2000);
+                        } else {
+                            throw new Error('Sepete ekleme başarısız');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Sepete ekleme hatası:', error);
+                        button.disabled = false;
+                        button.textContent = originalText;
+                        alert('Sepete ekleme sırasında bir hata oluştu.');
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

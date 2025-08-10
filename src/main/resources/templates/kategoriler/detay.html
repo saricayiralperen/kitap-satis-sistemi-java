@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title}">Kategori Detayı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/site.css}" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #bdc3c7;
+            --text-color: #2c3e50;
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --navbar-bg: #ffffff;
+            --navbar-text: #2c3e50;
+            --footer-bg: #34495e;
+            --footer-text: #ecf0f1;
+            --accent-color: #e74c3c;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --border-color: #34495e;
+            --text-color: #ecf0f1;
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --navbar-bg: #2c3e50;
+            --navbar-text: #ecf0f1;
+            --footer-bg: #1a252f;
+            --footer-text: #ecf0f1;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+            padding-top: 80px;
+        }
+
+        .category-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .category-title {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .category-description {
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .book-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .book-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .book-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .book-author {
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 1rem;
+        }
+
+        .book-description {
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            flex: 1;
+        }
+
+        .book-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .book-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-detail {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            flex: 1;
+            text-align: center;
+        }
+
+        .btn-detail:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-cart {
+            background: var(--success-color);
+            border: none;
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-cart:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin: 3rem 0;
+        }
+
+        .pagination .page-link {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.75rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 5rem;
+            color: var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-color);
+        }
+
+        .sort-controls {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .sort-controls select {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .results-info {
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a th:href="@{/}">Ana Sayfa</a></li>
+                <li class="breadcrumb-item"><a th:href="@{/kategoriler}">Kategoriler</a></li>
+                <li class="breadcrumb-item active" aria-current="page" th:text="${kategori?.ad ?: 'Kategori'}">Kategori</li>
+            </ol>
+        </nav>
+
+        <!-- Category Header -->
+        <div class="category-header" th:if="${kategori != null}">
+            <h1 class="category-title" th:text="${kategori.ad}">Kategori Adı</h1>
+            <p class="category-description" th:text="${kategori.aciklama ?: 'Bu kategoriye ait kitapları keşfedin'}">Kategori açıklaması</p>
+            <div class="results-info">
+                <span th:text="${totalElements}">0</span> kitap bulundu
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Sort Controls -->
+        <div class="sort-controls" th:if="${kitaplar != null and !#lists.isEmpty(kitaplar)}">
+            <span><strong>Sıralama:</strong></span>
+            <select id="sortSelect" onchange="changeSorting()">
+                <option value="ad-asc" th:selected="${sortBy == 'ad' and sortDir == 'asc'}">İsim (A-Z)</option>
+                <option value="ad-desc" th:selected="${sortBy == 'ad' and sortDir == 'desc'}">İsim (Z-A)</option>
+                <option value="fiyat-asc" th:selected="${sortBy == 'fiyat' and sortDir == 'asc'}">Fiyat (Düşük-Yüksek)</option>
+                <option value="fiyat-desc" th:selected="${sortBy == 'fiyat' and sortDir == 'desc'}">Fiyat (Yüksek-Düşük)</option>
+                <option value="yayinTarihi-desc" th:selected="${sortBy == 'yayinTarihi' and sortDir == 'desc'}">En Yeni</option>
+                <option value="yayinTarihi-asc" th:selected="${sortBy == 'yayinTarihi' and sortDir == 'asc'}">En Eski</option>
+            </select>
+            <div class="ms-auto results-info">
+                Sayfa <span th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span>
+            </div>
+        </div>
+
+        <!-- Books Grid -->
+        <div th:if="${kitaplar != null and !#lists.isEmpty(kitaplar)}" class="books-grid">
+            <div th:each="kitap : ${kitaplar}" class="book-card">
+                <img th:src="${kitap.resimUrl ?: '/images/no-image.jpg'}" 
+                     th:alt="${kitap.ad}" 
+                     class="book-image"
+                     onerror="this.src='/images/no-image.jpg'">
+                
+                <div class="book-content">
+                    <h5 class="book-title" th:text="${kitap.ad}">Kitap Adı</h5>
+                    <p class="book-author" th:text="${kitap.yazar}">Yazar Adı</p>
+                    <p class="book-description" th:text="${#strings.abbreviate(kitap.aciklama ?: 'Açıklama mevcut değil', 100)}">Kitap açıklaması...</p>
+                    <div class="book-price" th:text="${#numbers.formatDecimal(kitap.fiyat, 0, 2)} + ' ₺'">0.00 ₺</div>
+                    
+                    <div class="book-actions">
+                        <a th:href="@{/kitaplar/{id}(id=${kitap.id})}" class="btn-detail">
+                            <i class="bi bi-eye me-1"></i> Detay
+                        </a>
+                        <button class="btn-cart" onclick="addToCart([[${kitap.id}]])">
+                            <i class="bi bi-cart-plus me-1"></i> Sepet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${kitaplar == null or #lists.isEmpty(kitaplar)}" class="empty-state">
+            <div class="empty-icon">
+                <i class="bi bi-book"></i>
+            </div>
+            <h3>Bu kategoride henüz kitap bulunmuyor</h3>
+            <p class="text-muted mb-4">Diğer kategorileri keşfetmek için kategoriler sayfasına göz atabilirsiniz.</p>
+            <a th:href="@{/kategoriler}" class="btn-detail">
+                <i class="bi bi-grid me-1"></i> Kategorilere Dön
+            </a>
+        </div>
+
+        <!-- Pagination -->
+        <div th:if="${totalPages > 1}" class="pagination-container">
+            <nav aria-label="Sayfa navigasyonu">
+                <ul class="pagination">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/kategoriler/{id}(id=${kategori.id}, page=${currentPage - 1}, size=${kitapPage.size}, sortBy=${sortBy}, sortDir=${sortDir})}" aria-label="Önceki">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    
+                    <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}" 
+                        class="page-item" 
+                        th:classappend="${pageNum == currentPage} ? 'active'">
+                        <a class="page-link" 
+                           th:href="@{/kategoriler/{id}(id=${kategori.id}, page=${pageNum}, size=${kitapPage.size}, sortBy=${sortBy}, sortDir=${sortDir})}" 
+                           th:text="${pageNum + 1}">1</a>
+                    </li>
+                    
+                    <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/kategoriler/{id}(id=${kategori.id}, page=${currentPage + 1}, size=${kitapPage.size}, sortBy=${sortBy}, sortDir=${sortDir})}" aria-label="Sonraki">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/site.js}"></script>
+    
+    <script>
+        function changeSorting() {
+            const select = document.getElementById('sortSelect');
+            const value = select.value;
+            const [sortBy, sortDir] = value.split('-');
+            
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('sortBy', sortBy);
+            currentUrl.searchParams.set('sortDir', sortDir);
+            currentUrl.searchParams.set('page', '0'); // Reset to first page
+            
+            window.location.href = currentUrl.toString();
+        }
+        
+        function addToCart(kitapId) {
+            // Sepete ekleme fonksiyonu - daha sonra implement edilecek
+            alert('Sepete ekleme özelliği yakında eklenecek!');
+        }
+    </script>
+</body>
+</html>

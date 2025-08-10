@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title != null ? title + ' - AlperenBooks' : 'AlperenBooks'}">AlperenBooks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/site.css}">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --navbar-bg: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            --navbar-text: #495057;
+            --footer-bg: #f8f9fa;
+            --primary-gradient-start: #667eea;
+            --primary-gradient-end: #764ba2;
+            --accent-gradient-start: #ff6b6b;
+            --accent-gradient-end: #ee5a24;
+            --secondary-gradient-start: #f093fb;
+            --secondary-gradient-end: #f5576c;
+            --info-gradient-start: #4facfe;
+            --info-gradient-end: #00f2fe;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #1a1d23;
+            --text-color: #ffffff;
+            --card-bg: #2c3034;
+            --border-color: #495057;
+            --navbar-bg: linear-gradient(135deg, #212529 0%, #343a40 100%);
+            --navbar-text: #ffffff;
+            --footer-bg: #1a1d23;
+            --primary-gradient-start: #4c63d2;
+            --primary-gradient-end: #5a4fcf;
+            --accent-gradient-start: #e55656;
+            --accent-gradient-end: #d63031;
+            --secondary-gradient-start: #e17055;
+            --secondary-gradient-end: #d63031;
+            --info-gradient-start: #74b9ff;
+            --info-gradient-end: #0984e3;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .modern-nav-link {
+            color: var(--navbar-text) !important;
+            font-weight: 500;
+            padding: 8px 16px !important;
+            margin: 0 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modern-nav-link:hover {
+            color: #fff !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .modern-nav-link i {
+            margin-right: 6px;
+            font-size: 1.1em;
+        }
+        
+        .navbar {
+            background: var(--navbar-bg) !important;
+            border-bottom: 3px solid #667eea !important;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1) !important;
+            transition: background 0.3s;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+        
+        .theme-toggle {
+            background: none;
+            border: 2px solid var(--navbar-text);
+            color: var(--navbar-text);
+            border-radius: 50px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--navbar-text);
+            color: var(--bg-color);
+            transform: scale(1.1);
+        }
+        
+        .footer {
+            background-color: var(--footer-bg);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* Karanlık tema düzenlemeleri */
+        [data-theme="dark"] .navbar-brand {
+            color: #ffffff !important;
+        }
+        
+        [data-theme="dark"] .navbar-brand i {
+            color: #74b9ff !important;
+        }
+        
+        [data-theme="dark"] .text-muted {
+            color: #adb5bd !important;
+        }
+        
+        [data-theme="dark"] .navbar-toggler {
+            border-color: rgba(255,255,255,.1);
+        }
+        
+        [data-theme="dark"] .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        [data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, 
+        [data-theme="dark"] h4, [data-theme="dark"] h5, [data-theme="dark"] h6 {
+            color: var(--text-color) !important;
+        }
+        
+        [data-theme="dark"] p {
+            color: var(--text-color) !important;
+        }
+        
+        [data-theme="dark"] .form-control {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-color);
+        }
+        
+        [data-theme="dark"] .form-control:focus {
+            background-color: var(--card-bg);
+            border-color: #0d6efd;
+            color: var(--text-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-bold" th:href="@{/}" style="color: #667eea; font-size: 1.5rem;">
+                    <i class="bi bi-book-half" style="color: #764ba2;"></i> AlperenBooks
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" th:href="@{/}">
+                                <i class="bi bi-house-door"></i> Anasayfa
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" th:href="@{/kitaplar}">
+                                <i class="bi bi-book"></i> Kitaplar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" th:href="@{/kategoriler}">
+                                <i class="bi bi-grid-3x3-gap"></i> Kategoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" th:href="@{/favoriler}">
+                                <i class="bi bi-heart"></i> Favorilerim
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link modern-nav-link" th:href="@{/sepet}">
+                                <i class="bi bi-cart"></i> Sepetim
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item" th:if="${session.IsLoggedIn == null or session.IsLoggedIn == false}">
+                            <a class="nav-link modern-nav-link" th:href="@{/kullanici/login}">
+                                <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                            </a>
+                        </li>
+                        <li class="nav-item" th:if="${session.IsLoggedIn == null or session.IsLoggedIn == false}">
+                            <a class="nav-link modern-nav-link" th:href="@{/kullanici/register}">
+                                <i class="bi bi-person-plus"></i> Kayıt Ol
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown" th:if="${session.IsLoggedIn == true}">
+                            <a class="nav-link dropdown-toggle modern-nav-link" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-person-circle"></i> <span th:text="${session.KullaniciAd}">Kullanıcı</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" th:href="@{/kullanici/profil}"><i class="bi bi-person"></i> Profilim</a></li>
+                                <li><a class="dropdown-item" th:href="@{/siparisler}"><i class="bi bi-bag"></i> Siparişlerim</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" th:href="@{/kullanici/logout}"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <button class="theme-toggle" onclick="toggleTheme()">
+                                <i class="bi bi-moon-fill" id="theme-icon"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <main role="main" class="pb-3">
+            <div th:replace="${content}"></div>
+        </main>
+    </div>
+
+    <footer class="footer border-top text-muted">
+        <div class="container">
+            <div class="row py-4">
+                <div class="col-md-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-book-half" style="color: #764ba2;"></i> AlperenBooks
+                    </h5>
+                    <p class="text-muted">Kitap dünyasının dijital adresi. En kaliteli kitapları en uygun fiyatlarla.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-decoration-none"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="fw-bold mb-3">Hızlı Linkler</h6>
+                    <ul class="list-unstyled">
+                        <li><a th:href="@{/}" class="text-decoration-none text-muted">Anasayfa</a></li>
+                        <li><a th:href="@{/kitaplar}" class="text-decoration-none text-muted">Kitaplar</a></li>
+                        <li><a th:href="@{/kategoriler}" class="text-decoration-none text-muted">Kategoriler</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="fw-bold mb-3">Hesabım</h6>
+                    <ul class="list-unstyled">
+                        <li><a th:href="@{/kullanici/login}" class="text-decoration-none text-muted">Giriş Yap</a></li>
+                        <li><a th:href="@{/kullanici/register}" class="text-decoration-none text-muted">Kayıt Ol</a></li>
+                        <li><a th:href="@{/favoriler}" class="text-decoration-none text-muted">Favorilerim</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold mb-3">İletişim</h6>
+                    <p class="text-muted mb-1"><i class="bi bi-geo-alt"></i> İstanbul, Türkiye</p>
+                    <p class="text-muted mb-1"><i class="bi bi-telephone"></i> +90 (212) 123 45 67</p>
+                    <p class="text-muted mb-1"><i class="bi bi-envelope"></i> info@alperenbooks.com</p>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center py-3">
+                <p class="text-muted mb-0">&copy; 2024 AlperenBooks. Tüm hakları saklıdır. | Alperen Sarıçayır tarafından geliştirilmiştir.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/site.js}"></script>
+    <script>
+        // Tema değiştirme fonksiyonu
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.className = 'bi bi-moon-fill';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'bi bi-sun-fill';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        
+        // Sepet sayacını güncelleme fonksiyonu
+        function updateCartCount() {
+            fetch('/sepet/count')
+                .then(response => response.json())
+                .then(count => {
+                    const sepetCountElements = document.querySelectorAll('.sepet-count');
+                    sepetCountElements.forEach(element => {
+                        element.textContent = count;
+                    });
+                })
+                .catch(error => {
+                    console.error('Sepet sayacı güncellenirken hata:', error);
+                });
+        }
+        
+        // Sayfa yüklendiğinde tema ayarını kontrol et ve sepet sayacını güncelle
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'bi bi-sun-fill';
+            }
+            
+            // Sepet sayacını güncelle
+            updateCartCount();
+            
+            // Sepete ekleme formları için event listener ekle
+            const sepetForms = document.querySelectorAll('.sepet-form');
+            sepetForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Sayfa yenilenmesini engelle
+                    
+                    const formData = new FormData(form);
+                    const button = form.querySelector('button[type="submit"]');
+                    const originalText = button.textContent;
+                    
+                    // Buton durumunu değiştir
+                    button.disabled = true;
+                    button.textContent = 'Ekleniyor...';
+                    
+                    fetch('/sepet/ekle', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Başarılı ekleme
+                            button.textContent = 'Eklendi!';
+                            button.classList.remove('btn-primary');
+                            button.classList.add('btn-success');
+                            
+                            // Sepet sayacını güncelle
+                            updateCartCount();
+                            
+                            // 2 saniye sonra butonu eski haline getir
+                            setTimeout(() => {
+                                button.disabled = false;
+                                button.textContent = originalText;
+                                button.classList.remove('btn-success');
+                                button.classList.add('btn-primary');
+                            }, 2000);
+                        } else {
+                            throw new Error('Sepete ekleme başarısız');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Sepete ekleme hatası:', error);
+                        button.disabled = false;
+                        button.textContent = originalText;
+                        alert('Sepete ekleme sırasında bir hata oluştu.');
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>

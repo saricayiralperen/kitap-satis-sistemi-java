@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sepetim - AlperenBooks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+            color: #007bff !important;
+        }
+        .sepet-count {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="/">📚 AlperenBooks</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kitaplar">Kitaplar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kategori-listesi">Kategoriler</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item position-relative">
+                        <a class="nav-link active" href="/sepet">
+                            <i class="fas fa-shopping-cart"></i> Sepetim
+                            <span class="sepet-count">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/favoriler">
+                            <i class="fas fa-heart"></i> Favorilerim
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kullanici/login">
+                            <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/kullanici/register">
+                            <i class="fas fa-user-plus"></i> Kayıt Ol
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="mb-4">Sepetim</h1>
+
+        <!-- Success Message -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Info Message -->
+        <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show" role="alert">
+            <span th:text="${infoMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Empty Cart -->
+        <div th:if="${#lists.isEmpty(sepetItems)}" class="alert alert-info" role="alert">
+            Sepetinizde hiç ürün bulunmamaktadır. <a href="/kitaplar" class="alert-link">Kitaplara göz atın!</a>
+        </div>
+
+        <!-- Cart Items -->
+        <div th:unless="${#lists.isEmpty(sepetItems)}">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Resim</th>
+                        <th>Kitap Adı</th>
+                        <th>Fiyat</th>
+                        <th>Adet</th>
+                        <th>Toplam</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${sepetItems}">
+                        <td class="align-middle" style="width: 100px;">
+                            <img th:src="${item.resimUrl != null ? item.resimUrl : 'https://via.placeholder.com/100x150'}" 
+                                 th:alt="${item.kitapAd}" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 100px;">
+                        </td>
+                        <td class="align-middle" th:text="${item.kitapAd}"></td>
+                        <td class="align-middle" th:text="${#numbers.formatCurrency(item.fiyat)}"></td>
+                        <td class="align-middle">
+                            <form th:action="@{/sepet/adet-guncelle}" method="post" class="d-flex align-items-center adet-form">
+                                <input type="hidden" name="kitapId" th:value="${item.kitapId}" />
+                                <input type="number" name="adet" th:value="${item.adet}" min="1" 
+                                       class="form-control form-control-sm text-center adet-input" 
+                                       style="width: 70px;" 
+                                       onchange="updateQuantity(this)" 
+                                       th:data-old-value="${item.adet}" />
+                                <div class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></div>
+                            </form>
+                        </td>
+                        <td class="align-middle" th:text="${#numbers.formatCurrency(item.toplamFiyat)}"></td>
+                        <td class="align-middle">
+                            <form th:action="@{/sepet/sil}" method="post" class="sil-form" onsubmit="return confirmDelete(this);">
+                                <input type="hidden" name="kitapId" th:value="${item.kitapId}" />
+                                <button type="submit" class="btn btn-danger btn-sm sil-btn">
+                                    <span class="btn-text">Sil</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-end fw-bold">Genel Toplam:</td>
+                        <td colspan="2" class="fw-bold" th:text="${#numbers.formatCurrency(#aggregates.sum(sepetItems.![toplamFiyat]))}"></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="/kitaplar" class="btn btn-outline-secondary">Alışverişe Devam Et</a>
+                <a href="/sepet/siparis-tamamla" class="btn btn-success siparis-btn">
+                    <span class="btn-text">Siparişi Tamamla</span>
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let updateTimeout;
+        
+        function updateQuantity(input) {
+            var form = $(input).closest('.adet-form');
+            var spinner = form.find('.spinner-border');
+            
+            // Eğer zaten bir işlem devam ediyorsa, yeni işlem başlatma
+            if (spinner.hasClass('d-none') === false) {
+                return;
+            }
+            
+            // Minimum değer kontrolü
+            var adet = parseInt($(input).val());
+            if (adet < 1) {
+                $(input).val(1);
+                adet = 1;
+            }
+            
+            // Önceki timeout'u temizle
+            if (updateTimeout) {
+                clearTimeout(updateTimeout);
+            }
+            
+            // 500ms bekle, sonra AJAX ile gönder
+            updateTimeout = setTimeout(function() {
+                spinner.removeClass('d-none');
+                $(input).prop('disabled', true);
+                
+                var formData = form.serialize();
+                console.log('AJAX gönderiliyor - Form data:', formData);
+                
+                $.ajax({
+                     url: form.attr('action'),
+                     type: 'POST',
+                     data: formData,
+                     headers: {
+                         'X-Requested-With': 'XMLHttpRequest'
+                     },
+                     success: function(response) {
+                         if (response.success) {
+                             // Sepet sayısını güncelle
+                             updateCartCount();
+                             
+                             // Toplam fiyatı güncelle
+                             var row = $(input).closest('tr');
+                             var fiyatText = row.find('td:nth-child(3)').text();
+                             var fiyat = parseFloat(fiyatText.replace('₺', '').replace(',', '.'));
+                             var yeniToplam = (fiyat * adet).toFixed(2);
+                             row.find('td:nth-child(5)').text('₺' + yeniToplam.replace('.', ','));
+                             
+                             // Genel toplamı yeniden hesapla
+                             var genelToplam = 0;
+                             $('tbody tr').each(function() {
+                                 var satirToplamText = $(this).find('td:nth-child(5)').text();
+                                 var satirToplam = parseFloat(satirToplamText.replace('₺', '').replace(',', '.'));
+                                 if (!isNaN(satirToplam)) {
+                                     genelToplam += satirToplam;
+                                 }
+                             });
+                             $('tfoot td:last').text('₺' + genelToplam.toFixed(2).replace('.', ','));
+                             
+                             console.log('Adet başarıyla güncellendi:', response.yeniAdet);
+                         } else {
+                             console.log('Hata:', response.message);
+                             $(input).val($(input).data('old-value') || 1);
+                         }
+                     },
+                     error: function() {
+                         console.log('Adet güncellenirken hata oluştu');
+                         $(input).val($(input).data('old-value') || 1);
+                     },
+                     complete: function() {
+                         spinner.addClass('d-none');
+                         $(input).prop('disabled', false);
+                     }
+                 });
+            }, 500);
+        }
+        
+        function confirmDelete(form) {
+            if (confirm('Bu ürünü sepetten kaldırmak istediğinizden emin misiniz?')) {
+                var btn = $(form).find('.sil-btn');
+                btn.prop('disabled', true);
+                btn.find('.btn-text').text('Siliniyor...');
+                btn.find('.spinner-border').removeClass('d-none');
+                return true;
+            }
+            return false;
+        }
+        
+        // Sepet sayacını güncelleme fonksiyonu
+        function updateCartCount() {
+            fetch('/sepet/count')
+                .then(response => response.json())
+                .then(count => {
+                    const sepetCountElements = document.querySelectorAll('.sepet-count');
+                    sepetCountElements.forEach(element => {
+                        element.textContent = count;
+                    });
+                })
+                .catch(error => {
+                    console.error('Sepet sayacı güncellenirken hata:', error);
+                });
+        }
+        
+        $(document).ready(function() {
+            // Sayfa yüklendiğinde sepet sayacını güncelle
+            updateCartCount();
+            
+            // Sipariş tamamla butonu için loading state
+            $('.siparis-btn').on('click', function() {
+                var btn = $(this);
+                btn.find('.btn-text').text('Yönlendiriliyor...');
+                btn.find('.spinner-border').removeClass('d-none');
+            });
+            
+            // Resim yükleme hatası durumunda placeholder göster
+            $('img').on('error', function() {
+                var $img = $(this);
+                // Eğer zaten placeholder'a çevrilmişse, tekrar değiştirme
+                if (!$img.attr('src').includes('placeholder')) {
+                    $img.attr('src', 'https://via.placeholder.com/100x150?text=Resim+Bulunamadı');
+                    $img.off('error'); // Error event'ini kaldır, sonsuz döngüyü önle
+                }
+            });
+            
+            // Sayfa yüklendiğinde mevcut resimleri kontrol et
+            $('img').each(function() {
+                var $img = $(this);
+                var src = $img.attr('src');
+                if (!src || src === '' || src === 'null') {
+                    $img.attr('src', 'https://via.placeholder.com/100x150?text=Resim+Bulunamadı');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

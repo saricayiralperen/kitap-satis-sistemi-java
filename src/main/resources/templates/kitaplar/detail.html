@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${kitap.ad} + ' - AlperenBooks'">Kitap Detayı - AlperenBooks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/site.css" rel="stylesheet" />
+    
+    <style>
+        .book-detail-section {
+            padding: 40px 0;
+        }
+        
+        .book-image-large {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .book-info {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .book-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+        
+        .book-author {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        .book-price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+        
+        .book-category {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        
+        .stock-info {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stock-available {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .stock-unavailable {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn-add-cart {
+            background: linear-gradient(135deg, var(--success-color) 0%, #20c997 100%);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-add-cart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+        
+        .btn-add-wishlist {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-add-wishlist:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .related-books {
+            margin-top: 60px;
+        }
+        
+        .related-book-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .related-book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .related-book-image {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .breadcrumb-custom {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .breadcrumb-custom .breadcrumb {
+            margin-bottom: 0;
+            background: transparent;
+        }
+        
+        .breadcrumb-custom .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .breadcrumb-custom .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .book-description {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .quantity-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .quantity-input {
+            width: 80px;
+            text-align: center;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px;
+        }
+        
+        .sepet-count {
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-book-fill"></i> AlperenBooks
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/">
+                            <i class="bi bi-house-fill"></i> Ana Sayfa
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/kitaplar">
+                            <i class="bi bi-book"></i> Kitaplar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/kategori-listesi">
+                            <i class="bi bi-grid-3x3-gap"></i> Kategoriler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/favoriler">
+                            <i class="bi bi-heart"></i> Favorilerim
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/kullanici/login">
+                            <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link modern-nav-link" href="/kullanici/register">
+                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item position-relative">
+                        <a class="nav-link modern-nav-link" href="/sepet">
+                            <i class="bi bi-cart"></i> Sepetim
+                            <span class="sepet-count">0</span>
+                        </a>
+                    </li>
+                </ul>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    <i class="bi bi-moon-fill"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 100px;">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-custom">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i> Ana Sayfa</a></li>
+                    <li class="breadcrumb-item"><a href="/kitaplar">Kitaplar</a></li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/kitaplar(kategoriId=${kitap.kategori.id})}" th:text="${kitap.kategori.ad}">Kategori</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page" th:text="${kitap.ad}">Kitap Adı</li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Book Detail Section -->
+        <div class="book-detail-section">
+            <div class="row">
+                <!-- Book Image -->
+                <div class="col-lg-5 col-md-6 mb-4">
+                    <img th:src="${kitap.resimUrl != null ? kitap.resimUrl : '/images/no-image.jpg'}" 
+                         class="book-image-large" 
+                         th:alt="${kitap.ad}">
+                </div>
+                
+                <!-- Book Info -->
+                <div class="col-lg-7 col-md-6">
+                    <div class="book-info">
+                        <h1 class="book-title" th:text="${kitap.ad}">Kitap Başlığı</h1>
+                        <p class="book-author">
+                            <i class="bi bi-person-fill"></i> <span th:text="${kitap.yazar}">Yazar Adı</span>
+                        </p>
+                        
+                        <div class="book-category">
+                            <i class="bi bi-tag-fill"></i> <span th:text="${kitap.kategori.ad}">Kategori</span>
+                        </div>
+                        
+                        <div class="book-price">
+                            <i class="bi bi-currency-exchange"></i> <span th:text="${kitap.fiyat} + ' ₺'">0 ₺</span>
+                        </div>
+                        
+                        <!-- Stock Info -->
+                        <div class="stock-info" 
+                             th:classappend="${kitap.stokMiktari > 0} ? 'stock-available' : 'stock-unavailable'">
+                            <div th:if="${kitap.stokMiktari > 0}">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <strong>Stokta Mevcut</strong>
+                                <span th:text="'(' + ${kitap.stokMiktari} + ' adet)'"></span>
+                            </div>
+                            <div th:if="${kitap.stokMiktari == 0}">
+                                <i class="bi bi-x-circle-fill"></i>
+                                <strong>Stokta Yok</strong>
+                                <p class="mb-0">Bu ürün şu anda stokta bulunmamaktadır.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Quantity Selector -->
+                        <div class="quantity-selector" th:if="${kitap.stokMiktari > 0}">
+                            <label for="quantity"><strong>Adet:</strong></label>
+                            <button type="button" class="quantity-btn" onclick="decreaseQuantity()">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <input type="number" id="quantity" class="quantity-input" value="1" min="1" th:max="${kitap.stokMiktari}">
+                            <button type="button" class="quantity-btn" onclick="increaseQuantity()">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <form action="/sepet/ekle" method="post" class="d-inline sepet-form">
+                                <input type="hidden" name="kitapId" th:value="${kitap.id}" />
+                                <input type="hidden" name="adet" id="hiddenQuantity" value="1" />
+                                <button type="submit" class="btn btn-add-cart" th:disabled="${kitap.stokMiktari == 0}">
+                                    <i class="bi bi-cart-plus"></i> Sepete Ekle
+                                </button>
+                            </form>
+                            <button class="btn btn-add-wishlist" onclick="addToWishlist()">
+                                <i class="bi bi-heart"></i> Favorilere Ekle
+                            </button>
+                        </div>
+                        
+                        <!-- Additional Info -->
+                        <div class="mt-4">
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <i class="bi bi-truck text-success" style="font-size: 2rem;"></i>
+                                    <p class="small mt-2 mb-0"><strong>Ücretsiz Kargo</strong></p>
+                                    <p class="small text-muted">150₺ üzeri</p>
+                                </div>
+                                <div class="col-4">
+                                    <i class="bi bi-shield-check text-primary" style="font-size: 2rem;"></i>
+                                    <p class="small mt-2 mb-0"><strong>Güvenli Ödeme</strong></p>
+                                    <p class="small text-muted">SSL korumalı</p>
+                                </div>
+                                <div class="col-4">
+                                    <i class="bi bi-arrow-repeat text-warning" style="font-size: 2rem;"></i>
+                                    <p class="small mt-2 mb-0"><strong>Kolay İade</strong></p>
+                                    <p class="small text-muted">14 gün içinde</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Book Description -->
+        <div class="book-description" th:if="${kitap.aciklama != null and !kitap.aciklama.isEmpty()}">
+            <h4><i class="bi bi-info-circle"></i> Kitap Hakkında</h4>
+            <p th:text="${kitap.aciklama}">Kitap açıklaması burada yer alacak.</p>
+        </div>
+        
+        <!-- Related Books -->
+        <div class="related-books" th:if="${relatedBooks != null and !relatedBooks.isEmpty()}">
+            <h3 class="mb-4">
+                <i class="bi bi-collection"></i> Benzer Kitaplar
+            </h3>
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4" th:each="relatedBook : ${relatedBooks}">
+                    <div class="card related-book-card h-100">
+                        <img th:src="${relatedBook.resimUrl != null ? relatedBook.resimUrl : '/images/no-image.jpg'}" 
+                             class="card-img-top related-book-image" 
+                             th:alt="${relatedBook.ad}">
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title" th:text="${relatedBook.ad}">Kitap Başlığı</h6>
+                            <p class="card-text text-muted small mb-2" th:text="${relatedBook.yazar}">Yazar</p>
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-primary" th:text="${relatedBook.fiyat} + ' ₺'">0 ₺</span>
+                                    <small class="text-muted" th:if="${relatedBook.stokMiktari > 0}">
+                                        <i class="bi bi-check-circle text-success"></i> Stokta
+                                    </small>
+                                </div>
+                                <a th:href="@{/kitaplar/{id}(id=${relatedBook.id})}" class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="bi bi-eye"></i> İncele
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-book-fill"></i> AlperenBooks</h5>
+                    <p class="text-muted">En kaliteli kitapları en uygun fiyatlarla.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">&copy; 2024 AlperenBooks. Tüm hakları saklıdır.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/site.js"></script>
+    
+    <script>
+        function increaseQuantity() {
+            const input = document.getElementById('quantity');
+            const max = parseInt(input.getAttribute('max'));
+            const current = parseInt(input.value);
+            if (current < max) {
+                input.value = current + 1;
+                updateHiddenQuantity();
+            }
+        }
+        
+        function decreaseQuantity() {
+            const input = document.getElementById('quantity');
+            const current = parseInt(input.value);
+            if (current > 1) {
+                input.value = current - 1;
+                updateHiddenQuantity();
+            }
+        }
+        
+        function updateHiddenQuantity() {
+            const quantity = document.getElementById('quantity').value;
+            const hiddenQuantity = document.getElementById('hiddenQuantity');
+            if (hiddenQuantity) {
+                hiddenQuantity.value = quantity;
+            }
+        }
+        
+        // Adet değiştiğinde hidden input'u güncelle
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantityInput = document.getElementById('quantity');
+            if (quantityInput) {
+                quantityInput.addEventListener('change', updateHiddenQuantity);
+                quantityInput.addEventListener('input', updateHiddenQuantity);
+            }
+        });
+        
+        // Sepet sayacını güncelleme fonksiyonu
+        function updateCartCount() {
+            fetch('/sepet/count')
+                .then(response => response.json())
+                .then(count => {
+                    const sepetCountElements = document.querySelectorAll('.sepet-count');
+                    sepetCountElements.forEach(element => {
+                        element.textContent = count;
+                    });
+                })
+                .catch(error => {
+                    console.error('Sepet sayacı güncellenirken hata:', error);
+                });
+        }
+        
+        // Sayfa yüklendiğinde sepet sayacını güncelle
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            
+            // Sepete ekleme formları için event listener ekle
+            const sepetForms = document.querySelectorAll('.sepet-form');
+            sepetForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Sayfa yenilenmesini engelle
+                    
+                    const formData = new FormData(form);
+                    const button = form.querySelector('button[type="submit"]');
+                    const originalText = button.textContent;
+                    
+                    // Buton durumunu değiştir
+                    button.disabled = true;
+                    button.textContent = 'Ekleniyor...';
+                    
+                    fetch('/sepet/ekle', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Başarılı ekleme
+                            button.textContent = 'Eklendi!';
+                            button.classList.remove('btn-add-cart');
+                            button.classList.add('btn-success');
+                            
+                            // Sepet sayacını güncelle
+                            updateCartCount();
+                            
+                            // 2 saniye sonra butonu eski haline getir
+                            setTimeout(() => {
+                                button.disabled = false;
+                                button.textContent = originalText;
+                                button.classList.remove('btn-success');
+                                button.classList.add('btn-add-cart');
+                            }, 2000);
+                        } else {
+                            throw new Error('Sepete ekleme başarısız');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Sepete ekleme hatası:', error);
+                        button.disabled = false;
+                        button.textContent = originalText;
+                        alert('Sepete ekleme sırasında bir hata oluştu.');
+                    });
+                });
+            });
+        });
+        
+        function addToCart() {
+            const quantity = document.getElementById('quantity').value;
+            const hiddenQuantity = document.getElementById('hiddenQuantity');
+            if (hiddenQuantity) {
+                hiddenQuantity.value = quantity;
+            }
+            const bookId = /*[[${kitap.id}]]*/ 0;
+            
+            // Sepete ekleme işlemi burada yapılacak
+            showToast('Kitap sepete eklendi!', 'success');
+        }
+        
+        function addToWishlist() {
+            const bookId = /*[[${kitap.id}]]*/ 0;
+            
+            // Favorilere ekleme işlemi burada yapılacak
+            showToast('Kitap favorilere eklendi!', 'info');
+        }
+    </script>
+</body>
+</html>

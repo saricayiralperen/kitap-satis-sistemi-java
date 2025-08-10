@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${title}">Sipariş Detayı</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link th:href="@{/css/site.css}" rel="stylesheet" />
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --border-color: #bdc3c7;
+            --text-color: #2c3e50;
+            --bg-color: #ecf0f1;
+            --card-bg: #ffffff;
+            --navbar-bg: #ffffff;
+            --navbar-text: #2c3e50;
+            --footer-bg: #34495e;
+            --footer-text: #ecf0f1;
+            --accent-color: #e74c3c;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --border-color: #34495e;
+            --text-color: #ecf0f1;
+            --bg-color: #2c3e50;
+            --card-bg: #34495e;
+            --navbar-bg: #2c3e50;
+            --navbar-text: #ecf0f1;
+            --footer-bg: #1a252f;
+            --footer-text: #ecf0f1;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        .order-detail-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .order-info-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .order-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-tamamlandi {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-beklemede {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-iptal {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .order-items-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .order-item:hover {
+            background: var(--light-color);
+        }
+
+        [data-theme="dark"] .order-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .item-image {
+            width: 80px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .item-info {
+            flex: 1;
+            margin-left: 1.5rem;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .item-author {
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-details {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .order-summary {
+            background: var(--light-color);
+            padding: 1.5rem;
+            border-radius: 0 0 15px 15px;
+        }
+
+        [data-theme="dark"] .order-summary {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 1rem;
+            border-top: 2px solid var(--border-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="order-detail-container">
+        <div class="page-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="bi bi-receipt me-2"></i>Sipariş Detayı</h1>
+                    <p class="mb-0 text-muted">Sipariş #<span th:text="${siparis?.id ?: 'N/A'}">1</span> detayları</p>
+                </div>
+                <a th:href="@{/siparisler}" class="btn-back">
+                    <i class="bi bi-arrow-left me-1"></i> Siparişlerime Dön
+                </a>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${siparis != null}">
+            <!-- Order Info -->
+            <div class="order-info-card">
+                <div class="order-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h3 class="mb-1">Sipariş #<span th:text="${siparis.id}">1</span></h3>
+                            <p class="mb-0 opacity-75">Sipariş Tarihi: <span th:text="${#temporals.format(siparis.siparisTarihi, 'dd.MM.yyyy HH:mm')}">01.01.2024 12:00</span></p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span th:class="'order-status status-' + ${#strings.toLowerCase(siparis.durum)}" th:text="${siparis.durum}">Tamamlandı</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Sipariş Tarihi</div>
+                        <div class="info-value" th:text="${#temporals.format(siparis.siparisTarihi, 'dd MMMM yyyy, HH:mm')}">01 Ocak 2024, 12:00</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Sipariş Durumu</div>
+                        <div class="info-value">
+                            <span th:class="'order-status status-' + ${#strings.toLowerCase(siparis.durum)}" th:text="${siparis.durum}">Tamamlandı</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Toplam Tutar</div>
+                        <div class="info-value" style="color: var(--primary-color); font-size: 1.3rem;">
+                            <span th:text="${#numbers.formatDecimal(siparis.toplamTutar, 0, 2)}">0.00</span> ₺
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Ürün Sayısı</div>
+                        <div class="info-value" th:text="${siparis.siparisDetaylari?.size() ?: 0}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="order-items-card">
+                <div class="card-header">
+                    <i class="bi bi-bag me-2"></i>Sipariş Ürünleri
+                </div>
+
+                <div th:if="${siparis.siparisDetaylari != null and !#lists.isEmpty(siparis.siparisDetaylari)}">
+                    <div th:each="detay : ${siparis.siparisDetaylari}" class="order-item">
+                        <img th:src="${detay.kitap?.resimUrl ?: '/images/no-image.jpg'}" 
+                             th:alt="${detay.kitap?.baslik ?: 'Kitap'}" 
+                             class="item-image"
+                             onerror="this.src='/images/no-image.jpg'">
+                        
+                        <div class="item-info">
+                            <div class="item-title" th:text="${detay.kitap?.baslik ?: 'Kitap Bulunamadı'}">Kitap Adı</div>
+                            <div class="item-author" th:text="${detay.kitap?.yazar ?: 'Yazar Bilinmiyor'}">Yazar Adı</div>
+                            
+                            <div class="item-details">
+                                <div class="detail-item">
+                                    <span class="detail-label">Adet</span>
+                                    <span class="detail-value" th:text="${detay.adet}">1</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Birim Fiyat</span>
+                                    <span class="detail-value" th:text="${#numbers.formatDecimal(detay.fiyat, 0, 2)} + ' ₺'">0.00 ₺</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Toplam</span>
+                                    <span class="detail-value" th:text="${#numbers.formatDecimal(detay.adet * detay.fiyat, 0, 2)} + ' ₺'">0.00 ₺</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${siparis.siparisDetaylari == null or #lists.isEmpty(siparis.siparisDetaylari)}" class="order-item text-center">
+                    <div class="w-100">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: var(--border-color);"></i>
+                        <h5 class="mt-3 mb-0">Bu siparişte ürün bulunamadı</h5>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Ara Toplam:</span>
+                        <span th:text="${#numbers.formatDecimal(siparis.toplamTutar, 0, 2)} + ' ₺'">0.00 ₺</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Kargo:</span>
+                        <span>Ücretsiz</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Toplam:</span>
+                        <span th:text="${#numbers.formatDecimal(siparis.toplamTutar, 0, 2)} + ' ₺'">0.00 ₺</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${siparis == null}" class="order-info-card text-center">
+            <i class="bi bi-exclamation-triangle" style="font-size: 4rem; color: var(--warning-color);"></i>
+            <h3 class="mt-3">Sipariş Bulunamadı</h3>
+            <p class="text-muted mb-4">Aradığınız sipariş bulunamadı veya bu siparişe erişim yetkiniz bulunmuyor.</p>
+            <a th:href="@{/siparisler}" class="btn-back">
+                <i class="bi bi-arrow-left me-1"></i> Siparişlerime Dön
+            </a>
+        </div>
+    </div>
+
+    <div th:replace="~{layout :: footer}"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/site.js}"></script>
+</body>
+</html>

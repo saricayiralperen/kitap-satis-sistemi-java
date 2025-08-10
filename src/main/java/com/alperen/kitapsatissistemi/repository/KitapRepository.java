@@ -1,0 +1,115 @@
+package com.alperen.kitapsatissistemi.repository;
+
+import com.alperen.kitapsatissistemi.entity.Kitap;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * KitapRepository - .NET C# projesindeki veritabanı işlemlerinden dönüştürülmüştür
+ */
+@Repository
+public interface KitapRepository extends JpaRepository<Kitap, Long> {
+    
+    /**
+     * Kitap adına göre arama
+     */
+    List<Kitap> findByAdContainingIgnoreCase(String ad);
+    
+    /**
+     * Yazar adına göre arama
+     */
+    List<Kitap> findByYazarContainingIgnoreCase(String yazar);
+    
+    /**
+     * Kategori ID'sine göre kitapları bulma
+     */
+    List<Kitap> findByKategoriId(Long kategoriId);
+    
+    /**
+     * Fiyat aralığına göre kitapları bulma
+     */
+    List<Kitap> findByFiyatBetween(BigDecimal minFiyat, BigDecimal maxFiyat);
+    
+    /**
+     * Kitap adı ve yazar adına göre arama
+     */
+    @Query("SELECT k FROM Kitap k WHERE " +
+           "(:ad IS NULL OR LOWER(k.ad) LIKE LOWER(CONCAT('%', :ad, '%'))) AND " +
+           "(:yazar IS NULL OR LOWER(k.yazar) LIKE LOWER(CONCAT('%', :yazar, '%')))")
+    List<Kitap> findByAdAndYazar(@Param("ad") String ad, @Param("yazar") String yazar);
+    
+    /**
+     * Kategori ID'sine göre kitap sayısını bulma
+     */
+    long countByKategoriId(Long kategoriId);
+    
+    /**
+     * En pahalı kitapları bulma
+     */
+    @Query("SELECT k FROM Kitap k ORDER BY k.fiyat DESC")
+    List<Kitap> findTopByOrderByFiyatDesc();
+    
+    /**
+     * En ucuz kitapları bulma
+     */
+    @Query("SELECT k FROM Kitap k ORDER BY k.fiyat ASC")
+    List<Kitap> findTopByOrderByFiyatAsc();
+    
+    /**
+     * Belirli bir fiyatın üzerindeki kitapları bulma
+     */
+    List<Kitap> findByFiyatGreaterThan(BigDecimal fiyat);
+    
+    /**
+     * Belirli bir fiyatın altındaki kitapları bulma
+     */
+    List<Kitap> findByFiyatLessThan(BigDecimal fiyat);
+    
+    /**
+     * Kategori ile birlikte kitapları getirme
+     */
+    @Query("SELECT k FROM Kitap k LEFT JOIN k.kategori WHERE k.id = :id")
+    Optional<Kitap> findByIdWithKategori(@Param("id") Long id);
+    
+    /**
+     * Tüm kitapları kategori ile birlikte getirme
+     */
+    @Query("SELECT k FROM Kitap k LEFT JOIN k.kategori")
+    List<Kitap> findAllWithKategori();
+    
+    /**
+     * Resim URL'si olan kitapları bulma
+     */
+    @Query("SELECT k FROM Kitap k WHERE k.resimUrl IS NOT NULL AND k.resimUrl != ''")
+    List<Kitap> findKitaplarWithResim();
+
+    // Thymeleaf template'ler için ek metodlar
+    
+    /**
+     * Ada göre arama (case insensitive) - sayfalama ile
+     */
+    Page<Kitap> findByAdContainingIgnoreCase(String ad, Pageable pageable);
+    
+    /**
+     * Kategori ID'ye göre kitapları getir - sayfalama ile
+     */
+    Page<Kitap> findByKategoriId(Long kategoriId, Pageable pageable);
+    
+    /**
+     * Ad ve kategori ID'ye göre arama - sayfalama ile
+     */
+    Page<Kitap> findByAdContainingIgnoreCaseAndKategoriId(String ad, Long kategoriId, Pageable pageable);
+    
+    /**
+     * Kategori ID'ye göre kitapları getir (belirli ID hariç)
+     */
+    List<Kitap> findByKategoriIdAndIdNot(Long kategoriId, Long excludeId);
+}

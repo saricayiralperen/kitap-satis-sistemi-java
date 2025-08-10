@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlar - Admin Paneli</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --sidebar-bg: #343a40;
+            --sidebar-hover: #495057;
+            --navbar-bg: #343a40;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #1a1d23;
+            --text-color: #ffffff;
+            --card-bg: #2c3034;
+            --border-color: #495057;
+            --sidebar-bg: #212529;
+            --sidebar-hover: #343a40;
+            --navbar-bg: #212529;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .admin-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-custom {
+            background: var(--navbar-bg) !important;
+        }
+        
+        .sidebar {
+            background: var(--sidebar-bg);
+            min-height: calc(100vh - 56px);
+            padding: 20px 0;
+        }
+        
+        .sidebar .nav-link {
+            color: #ffffff;
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover {
+            background: var(--sidebar-hover);
+            color: #ffffff;
+        }
+        
+        .sidebar .nav-link.active {
+            background: var(--sidebar-hover);
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .report-card {
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .report-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .btn-report {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-report:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/admin/dashboard}">
+                <i class="bi bi-shield-check me-2"></i>
+                Admin Paneli
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button id="themeToggle" class="btn btn-outline-light btn-sm me-3">
+                            <i class="bi bi-moon-fill" id="themeIcon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">Hoş Geldiniz, Admin!</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/logout}">
+                            <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/dashboard}">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/kategoriler}">
+                                <i class="bi bi-tags me-2"></i> Kategoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/kitaplar}">
+                                <i class="bi bi-book me-2"></i> Kitaplar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/kullanicilar}">
+                                <i class="bi bi-people me-2"></i> Kullanıcılar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/siparisler}">
+                                <i class="bi bi-receipt me-2"></i> Siparişler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/favoriler}">
+                                <i class="bi bi-heart me-2"></i> Favoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/admin/raporlar}">
+                                <i class="bi bi-graph-up me-2"></i> Raporlar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/ayarlar}">
+                                <i class="bi bi-gear me-2"></i> Ayarlar
+                            </a>
+                        </li>
+                        <li class="nav-item mt-auto">
+                            <a class="nav-link" th:href="@{/}">
+                                <i class="bi bi-house me-2"></i> Siteye Geri Dön
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-graph-up me-2"></i>
+                        Raporlar
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                                <i class="bi bi-printer"></i> Yazdır
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportToExcel()">
+                                <i class="bi bi-file-earmark-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Özet İstatistikler -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" th:text="${totalBooks ?: 0}">0</div>
+                            <div>Toplam Kitap</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" th:text="${totalCategories ?: 0}">0</div>
+                            <div>Toplam Kategori</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" th:text="${totalUsers ?: 0}">0</div>
+                            <div>Toplam Kullanıcı</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" th:text="${totalOrders ?: 0}">0</div>
+                            <div>Toplam Sipariş</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rapor Kartları -->
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card admin-card report-card">
+                            <div class="report-icon">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <h5 class="card-title">Kitap Raporu</h5>
+                            <p class="card-text">Kitap satış ve stok raporları</p>
+                            <button class="btn btn-report" onclick="generateBookReport()">
+                                Rapor Oluştur
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card admin-card report-card">
+                            <div class="report-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h5 class="card-title">Kullanıcı Raporu</h5>
+                            <p class="card-text">Kullanıcı aktivite raporları</p>
+                            <button class="btn btn-report" onclick="generateUserReport()">
+                                Rapor Oluştur
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card admin-card report-card">
+                            <div class="report-icon">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                            <h5 class="card-title">Sipariş Raporu</h5>
+                            <p class="card-text">Sipariş ve satış raporları</p>
+                            <button class="btn btn-report" onclick="generateOrderReport()">
+                                Rapor Oluştur
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card admin-card report-card">
+                            <div class="report-icon">
+                                <i class="bi bi-tags"></i>
+                            </div>
+                            <h5 class="card-title">Kategori Raporu</h5>
+                            <p class="card-text">Kategori bazlı satış raporları</p>
+                            <button class="btn btn-report" onclick="generateCategoryReport()">
+                                Rapor Oluştur
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card admin-card report-card">
+                            <div class="report-icon">
+                                <i class="bi bi-heart"></i>
+                            </div>
+                            <h5 class="card-title">Favori Raporu</h5>
+                            <p class="card-text">En çok favorilenen kitaplar</p>
+                            <button class="btn btn-report" onclick="generateFavoriteReport()">
+                                Rapor Oluştur
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card admin-card report-card">
+                            <div class="report-icon">
+                                <i class="bi bi-calendar"></i>
+                            </div>
+                            <h5 class="card-title">Tarih Bazlı Rapor</h5>
+                            <p class="card-text">Belirli tarih aralığı raporları</p>
+                            <button class="btn btn-report" onclick="generateDateReport()">
+                                Rapor Oluştur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rapor Sonuçları -->
+                <div id="reportResults" class="mt-4" style="display: none;">
+                    <div class="card admin-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-file-text me-2"></i>
+                                Rapor Sonuçları
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="reportContent">
+                                <!-- Rapor içeriği buraya gelecek -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hata mesajları -->
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Tema değiştirme
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+            
+            const currentTheme = body.getAttribute('data-theme') || 'light';
+            updateThemeIcon(currentTheme);
+            
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = body.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                body.setAttribute('data-theme', newTheme);
+                updateThemeIcon(newTheme);
+                localStorage.setItem('adminTheme', newTheme);
+            });
+            
+            function updateThemeIcon(theme) {
+                if (theme === 'dark') {
+                    themeIcon.className = 'bi bi-sun-fill';
+                } else {
+                    themeIcon.className = 'bi bi-moon-fill';
+                }
+            }
+            
+            const savedTheme = localStorage.getItem('adminTheme');
+            if (savedTheme && savedTheme !== currentTheme) {
+                body.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            }
+        });
+
+        // Rapor fonksiyonları
+        function generateBookReport() {
+            showReport('Kitap Raporu', 'Kitap satış ve stok raporları burada görüntülenecek.');
+        }
+
+        function generateUserReport() {
+            showReport('Kullanıcı Raporu', 'Kullanıcı aktivite raporları burada görüntülenecek.');
+        }
+
+        function generateOrderReport() {
+            showReport('Sipariş Raporu', 'Sipariş ve satış raporları burada görüntülenecek.');
+        }
+
+        function generateCategoryReport() {
+            showReport('Kategori Raporu', 'Kategori bazlı satış raporları burada görüntülenecek.');
+        }
+
+        function generateFavoriteReport() {
+            showReport('Favori Raporu', 'En çok favorilenen kitaplar burada görüntülenecek.');
+        }
+
+        function generateDateReport() {
+            showReport('Tarih Bazlı Rapor', 'Belirli tarih aralığı raporları burada görüntülenecek.');
+        }
+
+        function showReport(title, content) {
+            document.getElementById('reportContent').innerHTML = `
+                <h6>${title}</h6>
+                <p>${content}</p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Bu özellik henüz geliştirilme aşamasındadır.
+                </div>
+            `;
+            document.getElementById('reportResults').style.display = 'block';
+            document.getElementById('reportResults').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function exportToExcel() {
+            alert('Excel export özelliği henüz geliştirilme aşamasındadır.');
+        }
+    </script>
+</body>
+</html>
