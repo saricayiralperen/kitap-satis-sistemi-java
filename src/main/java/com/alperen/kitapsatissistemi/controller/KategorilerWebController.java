@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
@@ -35,47 +36,7 @@ public class KategorilerWebController {
     @Autowired
     private KitapService kitapService;
 
-    /**
-     * Kategori listesi sayfası
-     * GET /kategori-listesi
-     */
-    @GetMapping("/kategori-listesi")
-    public String kategoriListesi(Model model, HttpSession session) {
-        try {
-            // Kullanıcı oturum bilgilerini kontrol et
-            Long kullaniciId = (Long) session.getAttribute("kullaniciId");
-            String kullaniciAdi = (String) session.getAttribute("kullaniciAdi");
-            
-            if (kullaniciId != null && kullaniciAdi != null) {
-                model.addAttribute("isLoggedIn", true);
-                model.addAttribute("kullaniciAdi", kullaniciAdi);
-            } else {
-                model.addAttribute("isLoggedIn", false);
-            }
-            
-            // Tüm kategorileri getir
-            List<Kategori> kategoriler = kategoriService.findAll();
-            
-            // Her kategori için kitap sayısını hesapla
-            for (Kategori kategori : kategoriler) {
-                long kitapSayisi = kitapService.countByKategoriId(kategori.getId());
-                kategori.setKitapSayisi((int) kitapSayisi);
-            }
-            
-            model.addAttribute("kategoriler", kategoriler);
-            model.addAttribute("title", "Kategori Listesi");
-            
-            return "kategoriler/index";
-            
-        } catch (Exception e) {
-            // Hata durumunda boş liste gönder
-            model.addAttribute("kategoriler", Collections.emptyList());
-            model.addAttribute("errorMessage", "Kategoriler yüklenirken bir hata oluştu: " + e.getMessage());
-            model.addAttribute("title", "Kategori Listesi");
-            model.addAttribute("isLoggedIn", false);
-            return "kategoriler/index";
-        }
-    }
+
 
     /**
      * Kategoriler ana sayfası
