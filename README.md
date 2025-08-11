@@ -15,7 +15,7 @@ Bu proje, .NET C# ile yazılmış olan kitap satış sisteminin Java Spring Boot
 ## 🛠️ Teknolojiler
 
 - **Backend**: Java 11, Spring Boot 2.7.14
-- **Database**: H2 (geliştirme), PostgreSQL (production)
+- **Database**: SQLite
 - **ORM**: Spring Data JPA, Hibernate
 - **Security**: Spring Security
 - **Template Engine**: Thymeleaf
@@ -50,6 +50,66 @@ Bu proje, .NET C# ile yazılmış olan kitap satış sisteminin Java Spring Boot
    ```
    http://localhost:8081
    ```
+
+## 👤 Test Kullanıcıları
+
+### Admin Kullanıcı
+- **Email**: admin@kitap.com
+- **Şifre**: admin123
+- **Rol**: Admin (tüm yetkilere sahip)
+
+### Test Kullanıcı
+- **Email**: test@test.com
+- **Şifre**: test123
+- **Rol**: Kullanıcı
+
+## 🔧 Yapılandırma
+
+Uygulama `application.properties` dosyasında yapılandırılabilir:
+
+```properties
+# Server Configuration
+server.port=8081
+
+# Database Configuration (SQLite)
+spring.datasource.url=jdbc:sqlite:kitap_satis_sistemi.db
+spring.jpa.hibernate.ddl-auto=update
+
+# Session Configuration
+server.servlet.session.timeout=30m
+```
+
+## 📁 Proje Yapısı
+
+```
+src/main/java/com/alperen/kitapsatissistemi/
+├── controller/          # Web ve API kontrolcüleri
+├── entity/             # JPA entity sınıfları
+├── repository/         # Data repository arayüzleri
+├── service/            # İş mantığı servisleri
+├── config/             # Yapılandırma sınıfları
+└── KitapSatisSistemiApplication.java
+
+src/main/resources/
+├── templates/          # Thymeleaf şablonları
+├── static/            # CSS, JS, resim dosyaları
+└── application.properties
+```
+
+## 🌟 Önemli Güncellemeler
+
+- ✅ Spring Security yapılandırması düzeltildi
+- ✅ Session yönetimi optimize edildi
+- ✅ `/siparisler` endpoint'i erişime açıldı
+- ✅ SQLite veritabanı entegrasyonu
+- ✅ Responsive tasarım iyileştirmeleri
+
+## 🚀 GitHub Repository
+
+Proje GitHub'da mevcut:
+```
+https://github.com/saricayiralperen/kitap-satis-sistemi-java.git
+```
 
 ## 📱 Kullanım
 
