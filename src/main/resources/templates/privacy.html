@@ -31,11 +31,28 @@
                     </li>
                 </ul>
                 <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/giris}">Giriş Yap</a>
+                    <!-- Kullanıcı giriş yapmamışsa -->
+                    <li class="nav-item" th:if="${session.IsLoggedIn == null or session.IsLoggedIn == false}">
+                        <a class="nav-link" th:href="@{/kullanici/login}">
+                            <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+                        </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/kayit}">Kayıt Ol</a>
+                    <li class="nav-item" th:if="${session.IsLoggedIn == null or session.IsLoggedIn == false}">
+                        <a class="nav-link" th:href="@{/kullanici/register}">
+                            <i class="bi bi-person-plus"></i> Kayıt Ol
+                        </a>
+                    </li>
+                    <!-- Kullanıcı giriş yapmışsa -->
+                    <li class="nav-item dropdown" th:if="${session.IsLoggedIn == true}">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> <span th:text="${session.KullaniciAd}">Kullanıcı</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/kullanici/profil}"><i class="bi bi-person"></i> Profilim</a></li>
+                            <li><a class="dropdown-item" th:href="@{/siparisler}"><i class="bi bi-bag"></i> Siparişlerim</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" th:href="@{/kullanici/logout}"><i class="bi bi-box-arrow-right"></i> Çıkış Yap</a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>
