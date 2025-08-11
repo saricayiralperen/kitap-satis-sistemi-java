@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +26,7 @@ import java.util.Optional;
  * .NET C# projesindeki KategorilerController'dan dönüştürülmüştür
  */
 @Controller
-@RequestMapping("/kategori-listesi")
+@RequestMapping("/kategoriler")
 public class KategorilerWebController {
 
     @Autowired
@@ -35,11 +36,63 @@ public class KategorilerWebController {
     private KitapService kitapService;
 
     /**
+     * Kategori listesi sayfası
+     * GET /kategori-listesi
+     */
+    @GetMapping("/kategori-listesi")
+    public String kategoriListesi(Model model, HttpSession session) {
+        try {
+            // Kullanıcı oturum bilgilerini kontrol et
+            Long kullaniciId = (Long) session.getAttribute("kullaniciId");
+            String kullaniciAdi = (String) session.getAttribute("kullaniciAdi");
+            
+            if (kullaniciId != null && kullaniciAdi != null) {
+                model.addAttribute("isLoggedIn", true);
+                model.addAttribute("kullaniciAdi", kullaniciAdi);
+            } else {
+                model.addAttribute("isLoggedIn", false);
+            }
+            
+            // Tüm kategorileri getir
+            List<Kategori> kategoriler = kategoriService.findAll();
+            
+            // Her kategori için kitap sayısını hesapla
+            for (Kategori kategori : kategoriler) {
+                long kitapSayisi = kitapService.countByKategoriId(kategori.getId());
+                kategori.setKitapSayisi((int) kitapSayisi);
+            }
+            
+            model.addAttribute("kategoriler", kategoriler);
+            model.addAttribute("title", "Kategori Listesi");
+            
+            return "kategoriler/index";
+            
+        } catch (Exception e) {
+            // Hata durumunda boş liste gönder
+            model.addAttribute("kategoriler", Collections.emptyList());
+            model.addAttribute("errorMessage", "Kategoriler yüklenirken bir hata oluştu: " + e.getMessage());
+            model.addAttribute("title", "Kategori Listesi");
+            model.addAttribute("isLoggedIn", false);
+            return "kategoriler/index";
+        }
+    }
+
+    /**
      * Kategoriler ana sayfası
      * GET /kategoriler
      */
     @GetMapping
-    public String index(Model model) {
+    public String index(Model model, HttpSession session) {
+        // Kullanıcı oturum bilgilerini kontrol et
+        Long kullaniciId = (Long) session.getAttribute("kullaniciId");
+        String kullaniciAdi = (String) session.getAttribute("kullaniciAdi");
+        
+        if (kullaniciId != null && kullaniciAdi != null) {
+            model.addAttribute("isLoggedIn", true);
+            model.addAttribute("kullaniciAdi", kullaniciAdi);
+        } else {
+            model.addAttribute("isLoggedIn", false);
+        }
         try {
             // Tüm kategorileri getir
             List<Kategori> kategoriler = kategoriService.findAll();
@@ -80,7 +133,7 @@ public class KategorilerWebController {
             Optional<Kategori> kategoriOpt = kategoriService.findById(id);
             if (!kategoriOpt.isPresent()) {
                 model.addAttribute("errorMessage", "Kategori bulunamadı.");
-                return "redirect:/kategori-listesi";
+                return "redirect:/kategoriler";
             }
             
             Kategori kategori = kategoriOpt.get();
@@ -108,7 +161,7 @@ public class KategorilerWebController {
             
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kategori detayları yüklenirken bir hata oluştu: " + e.getMessage());
-            return "redirect:/kategori-listesi";
+            return "redirect:/kategoriler";
         }
     }
 

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gizlilik Politikası - Kitap Satış Sistemi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="bi bi-book me-2"></i>
+                Kitap Satış Sistemi
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/kitaplar}">Kitaplar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/kategoriler}">Kategoriler</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/giris}">Giriş Yap</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/kayit}">Kayıt Ol</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h1 class="h3 mb-0">
+                            <i class="bi bi-shield-lock me-2"></i>
+                            Gizlilik Politikası
+                        </h1>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <p class="lead">Bu gizlilik politikası, kişisel bilgilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklar.</p>
+                        </div>
+
+                        <section class="mb-4">
+                            <h3 class="h5 text-primary">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Toplanan Bilgiler
+                            </h3>
+                            <p>Sitemizi kullanırken aşağıdaki bilgileri toplayabiliriz:</p>
+                            <ul>
+                                <li>Ad, soyad ve e-posta adresi</li>
+                                <li>Telefon numarası ve adres bilgileri</li>
+                                <li>Sipariş geçmişi ve tercihler</li>
+                                <li>Web sitesi kullanım verileri</li>
+                            </ul>
+                        </section>
+
+                        <section class="mb-4">
+                            <h3 class="h5 text-primary">
+                                <i class="bi bi-gear me-2"></i>
+                                Bilgilerin Kullanımı
+                            </h3>
+                            <p>Topladığımız bilgileri şu amaçlarla kullanırız:</p>
+                            <ul>
+                                <li>Siparişlerinizi işleme almak ve teslim etmek</li>
+                                <li>Müşteri hizmetleri sunmak</li>
+                                <li>Site deneyiminizi kişiselleştirmek</li>
+                                <li>Yasal yükümlülüklerimizi yerine getirmek</li>
+                            </ul>
+                        </section>
+
+                        <section class="mb-4">
+                            <h3 class="h5 text-primary">
+                                <i class="bi bi-shield-check me-2"></i>
+                                Bilgi Güvenliği
+                            </h3>
+                            <p>Kişisel bilgilerinizin güvenliğini sağlamak için:</p>
+                            <ul>
+                                <li>SSL şifreleme teknolojisi kullanırız</li>
+                                <li>Güvenli sunucularda veri saklarız</li>
+                                <li>Erişim kontrolü uygularız</li>
+                                <li>Düzenli güvenlik denetimleri yaparız</li>
+                            </ul>
+                        </section>
+
+                        <section class="mb-4">
+                            <h3 class="h5 text-primary">
+                                <i class="bi bi-share me-2"></i>
+                                Bilgi Paylaşımı
+                            </h3>
+                            <p>Kişisel bilgilerinizi üçüncü taraflarla paylaşmayız, ancak aşağıdaki durumlar istisnadır:</p>
+                            <ul>
+                                <li>Yasal zorunluluklar</li>
+                                <li>Sipariş teslimatı için kargo şirketleri</li>
+                                <li>Ödeme işlemleri için güvenilir ödeme sağlayıcıları</li>
+                            </ul>
+                        </section>
+
+                        <section class="mb-4">
+                            <h3 class="h5 text-primary">
+                                <i class="bi bi-cookie me-2"></i>
+                                Çerezler (Cookies)
+                            </h3>
+                            <p>Web sitemiz, deneyiminizi iyileştirmek için çerezler kullanır. Çerezleri tarayıcı ayarlarınızdan kontrol edebilirsiniz.</p>
+                        </section>
+
+                        <section class="mb-4">
+                            <h3 class="h5 text-primary">
+                                <i class="bi bi-person-check me-2"></i>
+                                Haklarınız
+                            </h3>
+                            <p>KVKK kapsamında aşağıdaki haklara sahipsiniz:</p>
+                            <ul>
+                                <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme</li>
+                                <li>Kişisel verilerinizin düzeltilmesini isteme</li>
+                                <li>Kişisel verilerinizin silinmesini isteme</li>
+                                <li>Kişisel verilerinizin aktarıldığı üçüncü kişileri öğrenme</li>
+                            </ul>
+                        </section>
+
+                        <section class="mb-4">
+                            <h3 class="h5 text-primary">
+                                <i class="bi bi-telephone me-2"></i>
+                                İletişim
+                            </h3>
+                            <p>Gizlilik politikamız hakkında sorularınız için bizimle iletişime geçebilirsiniz:</p>
+                            <ul class="list-unstyled">
+                                <li><i class="bi bi-envelope me-2"></i> E-posta: privacy@kitapsatis.com</li>
+                                <li><i class="bi bi-telephone me-2"></i> Telefon: +90 (212) 555-0123</li>
+                                <li><i class="bi bi-geo-alt me-2"></i> Adres: İstanbul, Türkiye</li>
+                            </ul>
+                        </section>
+
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>Son Güncelleme:</strong> Bu gizlilik politikası en son 2024 yılında güncellenmiştir.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Kitap Satış Sistemi</h5>
+                    <p class="mb-0">En kaliteli kitapları en uygun fiyatlarla.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a th:href="@{/privacy}" class="text-light text-decoration-none me-3">Gizlilik Politikası</a>
+                    <a th:href="@{/about}" class="text-light text-decoration-none me-3">Hakkımızda</a>
+                    <a th:href="@{/contact}" class="text-light text-decoration-none">İletişim</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

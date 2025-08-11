@@ -31,6 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/home", "/index").permitAll()
                 .antMatchers("/kitaplar", "/kitaplar/**").permitAll()
                 .antMatchers("/kategoriler", "/kategoriler/**").permitAll()
+                .antMatchers("/kategori-listesi").permitAll()
                 .antMatchers("/sepet", "/sepet/**").permitAll()
                 .antMatchers("/favoriler", "/favoriler/**").permitAll()
                 .antMatchers("/kullanici", "/kullanici/**").permitAll()

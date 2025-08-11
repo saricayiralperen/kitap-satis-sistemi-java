@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Sipariş Yönetimi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .status-beklemede { background-color: #ffc107; }
+        .status-hazirlaniyor { background-color: #17a2b8; }
+        .status-kargoda { background-color: #fd7e14; }
+        .status-teslim-edildi { background-color: #28a745; }
+        .status-iptal-edildi { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">Admin Panel</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/kategoriler">
+                                <i class="fas fa-tags me-2"></i>
+                                Kategoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/kitaplar">
+                                <i class="fas fa-book me-2"></i>
+                                Kitaplar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/kullanicilar">
+                                <i class="fas fa-users me-2"></i>
+                                Kullanıcılar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/siparisler">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Siparişler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/favoriler">
+                                <i class="fas fa-heart me-2"></i>
+                                Favoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/raporlar">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Raporlar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/ayarlar">
+                                <i class="fas fa-cog me-2"></i>
+                                Ayarlar
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link" href="/">
+                                <i class="fas fa-home me-2"></i>
+                                Ana Siteye Dön
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/logout">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Çıkış Yap
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Sipariş Yönetimi</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                                <i class="fas fa-print"></i> Yazdır
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportToExcel()">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                <h4 th:text="${totalElements ?: 0}">0</h4>
+                                <p class="mb-0">Toplam Sipariş</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-clock fa-2x mb-2"></i>
+                                <h4 th:text="${#lists.size(siparisler.?[durum == 'Beklemede']) ?: 0}">0</h4>
+                                <p class="mb-0">Bekleyen</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-truck fa-2x mb-2"></i>
+                                <h4 th:text="${#lists.size(siparisler.?[durum == 'Kargoda']) ?: 0}">0</h4>
+                                <p class="mb-0">Kargoda</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <h4 th:text="${#lists.size(siparisler.?[durum == 'Teslim Edildi']) ?: 0}">0</h4>
+                                <p class="mb-0">Teslim Edildi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-3">
+                                <label for="durum" class="form-label">Durum</label>
+                                <select class="form-select" id="durum" name="durum">
+                                    <option value="" th:selected="${durum == null or durum == ''}">Tümü</option>
+                                    <option value="Beklemede" th:selected="${durum == 'Beklemede'}">Beklemede</option>
+                                    <option value="Hazırlanıyor" th:selected="${durum == 'Hazırlanıyor'}">Hazırlanıyor</option>
+                                    <option value="Kargoda" th:selected="${durum == 'Kargoda'}">Kargoda</option>
+                                    <option value="Teslim Edildi" th:selected="${durum == 'Teslim Edildi'}">Teslim Edildi</option>
+                                    <option value="İptal Edildi" th:selected="${durum == 'İptal Edildi'}">İptal Edildi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortBy" class="form-label">Sıralama</label>
+                                <select class="form-select" id="sortBy" name="sortBy">
+                                    <option value="siparisTarihi" th:selected="${sortBy == 'siparisTarihi'}">Sipariş Tarihi</option>
+                                    <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+                                    <option value="toplamTutar" th:selected="${sortBy == 'toplamTutar'}">Toplam Tutar</option>
+                                    <option value="durum" th:selected="${sortBy == 'durum'}">Durum</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="sortDir" class="form-label">Yön</label>
+                                <select class="form-select" id="sortDir" name="sortDir">
+                                    <option value="desc" th:selected="${sortDir == 'desc'}">Azalan</option>
+                                    <option value="asc" th:selected="${sortDir == 'asc'}">Artan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="size" class="form-label">Sayfa Boyutu</label>
+                                <select class="form-select" id="size" name="size">
+                                    <option value="5" th:selected="${size == 5}">5</option>
+                                    <option value="10" th:selected="${size == 10}">10</option>
+                                    <option value="25" th:selected="${size == 25}">25</option>
+                                    <option value="50" th:selected="${size == 50}">50</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary d-block w-100">
+                                    <i class="fas fa-filter"></i> Filtrele
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            Sipariş Listesi
+                            <span class="badge bg-primary ms-2" th:text="${totalElements ?: 0}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Sipariş No</th>
+                                        <th>Müşteri</th>
+                                        <th>Sipariş Tarihi</th>
+                                        <th>Toplam Tutar</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="siparis : ${siparisler}">
+                                        <td>
+                                            <strong th:text="'#' + ${siparis.id}">#{siparis.id}</strong>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold" th:text="${siparis.kullanici?.adSoyad ?: 'Bilinmeyen'}">Müşteri Adı</div>
+                                                    <small class="text-muted" th:text="${siparis.kullanici?.email ?: ''}">email@example.com</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:text="${#temporals.format(siparis.siparisTarihi, 'dd.MM.yyyy')}">01.01.2024</span><br>
+                                            <small class="text-muted" th:text="${#temporals.format(siparis.siparisTarihi, 'HH:mm')}">12:00</small>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success" th:text="${#numbers.formatDecimal(siparis.toplamTutar, 0, 2)} + ' ₺'">0.00 ₺</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge status-badge" 
+                                                  th:classappend="'status-' + ${#strings.toLowerCase(#strings.replace(siparis.durum, ' ', '-'))}"
+                                                  th:text="${siparis.durum}">Beklemede</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{'/admin/siparisler/details/' + ${siparis.id}}" 
+                                                   class="btn btn-sm btn-outline-info btn-action" 
+                                                   title="Detayları Görüntüle">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-sm btn-outline-warning btn-action dropdown-toggle" 
+                                                            data-bs-toggle="dropdown" title="Durum Değiştir">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#" th:onclick="'updateStatus(' + ${siparis.id} + ', \'Beklemede\')'">
+                                                            <i class="fas fa-clock me-2"></i>Beklemede</a></li>
+                                                        <li><a class="dropdown-item" href="#" th:onclick="'updateStatus(' + ${siparis.id} + ', \'Hazırlanıyor\')'">
+                                                            <i class="fas fa-cog me-2"></i>Hazırlanıyor</a></li>
+                                                        <li><a class="dropdown-item" href="#" th:onclick="'updateStatus(' + ${siparis.id} + ', \'Kargoda\')'">
+                                                            <i class="fas fa-truck me-2"></i>Kargoda</a></li>
+                                                        <li><a class="dropdown-item" href="#" th:onclick="'updateStatus(' + ${siparis.id} + ', \'Teslim Edildi\')'">
+                                                            <i class="fas fa-check-circle me-2"></i>Teslim Edildi</a></li>
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><a class="dropdown-item text-danger" href="#" th:onclick="'updateStatus(' + ${siparis.id} + ', \'İptal Edildi\')'">
+                                                            <i class="fas fa-times-circle me-2"></i>İptal Et</a></li>
+                                                    </ul>
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-action" 
+                                                        th:onclick="'deleteSiparis(' + ${siparis.id} + ')'" 
+                                                        title="Sil">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(siparisler)}">
+                                        <td colspan="6" class="text-center py-4">
+                                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Henüz sipariş bulunmuyor.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${totalPages > 1}" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/siparisler(page=${currentPage - 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, durum=${durum})}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}" 
+                            class="page-item" 
+                            th:classappend="${pageNum == currentPage} ? 'active'">
+                            <a class="page-link" 
+                               th:href="@{/admin/siparisler(page=${pageNum}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, durum=${durum})}" 
+                               th:text="${pageNum + 1}">1</a>
+                        </li>
+                        
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/siparisler(page=${currentPage + 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir}, durum=${durum})}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updateStatus(siparisId, yeniDurum) {
+            if (confirm('Sipariş durumunu "' + yeniDurum + '" olarak değiştirmek istediğinizden emin misiniz?')) {
+                fetch('/admin/siparisler/update-status/' + siparisId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ durum: yeniDurum })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Sipariş durumu güncellenirken hata oluştu.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Sipariş durumu güncellenirken hata oluştu.');
+                });
+            }
+        }
+
+        function deleteSiparis(id) {
+            if (confirm('Bu siparişi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                fetch('/admin/siparisler/delete/' + id, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Sipariş silinirken hata oluştu.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Sipariş silinirken hata oluştu.');
+                });
+            }
+        }
+
+        function exportToExcel() {
+            window.location.href = '/admin/siparisler/export/excel';
+        }
+    </script>
+</body>
+</html>

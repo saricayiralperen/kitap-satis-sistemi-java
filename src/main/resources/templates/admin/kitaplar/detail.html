@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitap Detayı - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+        .book-image {
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .badge-custom {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">
+                            <i class="bi bi-shield-check me-2"></i>
+                            Admin Panel
+                        </h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin}">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/kategoriler}">
+                                <i class="bi bi-tags me-2"></i>
+                                Kategoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/admin/kitaplar}">
+                                <i class="bi bi-book me-2"></i>
+                                Kitaplar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/kullanicilar}">
+                                <i class="bi bi-people me-2"></i>
+                                Kullanıcılar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/siparisler}">
+                                <i class="bi bi-cart me-2"></i>
+                                Siparişler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/favoriler}">
+                                <i class="bi bi-heart me-2"></i>
+                                Favoriler
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link text-warning" th:href="@{/logout}">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Çıkış Yap
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-book me-2"></i>
+                        Kitap Detayı
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a th:href="@{/admin/kitaplar}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Geri Dön
+                            </a>
+                            <a th:href="@{'/admin/kitaplar/edit/' + ${kitap.id}}" class="btn btn-primary">
+                                <i class="bi bi-pencil me-1"></i>
+                                Düzenle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <img th:src="${kitap.resimUrl != null ? kitap.resimUrl : '/images/no-image.jpg'}" 
+                                     th:alt="${kitap.baslik}" 
+                                     class="img-fluid book-image mb-3">
+                                <h5 class="card-title" th:text="${kitap.baslik}">Kitap Başlığı</h5>
+                                <p class="text-muted" th:text="${kitap.yazar}">Yazar Adı</p>
+                                <div class="d-flex justify-content-center gap-2 mb-3">
+                                    <span class="badge bg-primary badge-custom" th:text="${kitap.kategori.ad}">Kategori</span>
+                                    <span class="badge bg-success badge-custom" th:if="${kitap.stokMiktari > 0}">Stokta</span>
+                                    <span class="badge bg-danger badge-custom" th:if="${kitap.stokMiktari == 0}">Tükendi</span>
+                                </div>
+                                <h4 class="text-primary" th:text="'₺' + ${kitap.fiyat}">₺0.00</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Kitap Bilgileri
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">ID:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.id}">1</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Başlık:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.baslik}">Kitap Başlığı</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Yazar:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.yazar}">Yazar Adı</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Kategori:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.kategori.ad}">Kategori Adı</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Fiyat:</label>
+                                        <p class="form-control-plaintext text-success fw-bold" th:text="'₺' + ${kitap.fiyat}">₺0.00</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Stok Miktarı:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.stokMiktari}">0</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">ISBN:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.isbn != null ? kitap.isbn : 'Belirtilmemiş'}">ISBN</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Sayfa Sayısı:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.sayfaSayisi != null ? kitap.sayfaSayisi : 'Belirtilmemiş'}">Sayfa Sayısı</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Yayın Tarihi:</label>
+                                        <p class="form-control-plaintext" th:text="${kitap.yayinTarihi != null ? #temporals.format(kitap.yayinTarihi, 'dd/MM/yyyy') : 'Belirtilmemiş'}">Yayın Tarihi</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Oluşturulma Tarihi:</label>
+                                        <p class="form-control-plaintext" th:text="${#temporals.format(kitap.olusturulmaTarihi, 'dd/MM/yyyy HH:mm')}">Oluşturulma Tarihi</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3" th:if="${kitap.aciklama != null and !kitap.aciklama.isEmpty()}">
+                                    <label class="form-label fw-bold">Açıklama:</label>
+                                    <div class="border rounded p-3 bg-light">
+                                        <p class="mb-0" th:text="${kitap.aciklama}">Kitap açıklaması</p>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3" th:if="${kitap.resimUrl != null and !kitap.resimUrl.isEmpty()}">
+                                    <label class="form-label fw-bold">Resim URL:</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" th:value="${kitap.resimUrl}" readonly>
+                                        <a th:href="${kitap.resimUrl}" target="_blank" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- İstatistikler -->
+                        <div class="card mt-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-graph-up me-2"></i>
+                                    İstatistikler
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <div class="border-end">
+                                            <h3 class="text-primary">0</h3>
+                                            <p class="text-muted mb-0">Toplam Satış</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="border-end">
+                                            <h3 class="text-success">0</h3>
+                                            <p class="text-muted mb-0">Favori Sayısı</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h3 class="text-warning">0</h3>
+                                        <p class="text-muted mb-0">Görüntülenme</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

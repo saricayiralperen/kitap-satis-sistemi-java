@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">Favori Yönetimi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">Admin Panel</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/kategoriler">
+                                <i class="fas fa-tags me-2"></i>
+                                Kategoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/kitaplar">
+                                <i class="fas fa-book me-2"></i>
+                                Kitaplar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/kullanicilar">
+                                <i class="fas fa-users me-2"></i>
+                                Kullanıcılar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/siparisler">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Siparişler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/favoriler">
+                                <i class="fas fa-heart me-2"></i>
+                                Favoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/raporlar">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Raporlar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/ayarlar">
+                                <i class="fas fa-cog me-2"></i>
+                                Ayarlar
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link" href="/">
+                                <i class="fas fa-home me-2"></i>
+                                Ana Siteye Dön
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/logout">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Çıkış Yap
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Favori Yönetimi</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                                <i class="fas fa-print"></i> Yazdır
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportToExcel()">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-heart fa-2x mb-2"></i>
+                                <h4 th:text="${totalElements ?: 0}">0</h4>
+                                <p class="mb-0">Toplam Favori</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x mb-2"></i>
+                                <h4 th:text="${#lists.size(favoriler.![kullanici].?[kullanici != null]) ?: 0}">0</h4>
+                                <p class="mb-0">Aktif Kullanıcı</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-book fa-2x mb-2"></i>
+                                <h4 th:text="${#lists.size(favoriler.![kitap].?[kitap != null]) ?: 0}">0</h4>
+                                <p class="mb-0">Favori Kitap</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stats-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <h4 th:text="${totalPages ?: 0}">0</h4>
+                                <p class="mb-0">Toplam Sayfa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters and Search -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label for="sortBy" class="form-label">Sıralama</label>
+                                <select class="form-select" id="sortBy" name="sortBy">
+                                    <option value="id" th:selected="${sortBy == 'id'}">ID</option>
+                                    <option value="kullanici.adSoyad" th:selected="${sortBy == 'kullanici.adSoyad'}">Kullanıcı Adı</option>
+                                    <option value="kitap.ad" th:selected="${sortBy == 'kitap.ad'}">Kitap Adı</option>
+                                    <option value="eklemeTarihi" th:selected="${sortBy == 'eklemeTarihi'}">Ekleme Tarihi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="sortDir" class="form-label">Yön</label>
+                                <select class="form-select" id="sortDir" name="sortDir">
+                                    <option value="asc" th:selected="${sortDir == 'asc'}">Artan</option>
+                                    <option value="desc" th:selected="${sortDir == 'desc'}">Azalan</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="size" class="form-label">Sayfa Boyutu</label>
+                                <select class="form-select" id="size" name="size">
+                                    <option value="5" th:selected="${size == 5}">5</option>
+                                    <option value="10" th:selected="${size == 10}">10</option>
+                                    <option value="25" th:selected="${size == 25}">25</option>
+                                    <option value="50" th:selected="${size == 50}">50</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="submit" class="btn btn-primary d-block w-100">
+                                    <i class="fas fa-filter"></i> Filtrele
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Favorites Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-heart me-2"></i>
+                            Favori Listesi
+                            <span class="badge bg-primary ms-2" th:text="${totalElements ?: 0}">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Kullanıcı</th>
+                                        <th>Kitap</th>
+                                        <th>Ekleme Tarihi</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="favori : ${favoriler}">
+                                        <td th:text="${favori.id}">1</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-user text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold" th:text="${favori.kullanici?.adSoyad ?: 'Bilinmeyen'}">Kullanıcı Adı</div>
+                                                    <small class="text-muted" th:text="${favori.kullanici?.email ?: ''}">email@example.com</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-success rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                    <i class="fas fa-book text-white"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold" th:text="${favori.kitap?.ad ?: 'Bilinmeyen'}">Kitap Adı</div>
+                                                    <small class="text-muted" th:text="${favori.kitap?.yazar ?: ''}">Yazar</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:text="${#temporals.format(favori.eklemeTarihi, 'dd.MM.yyyy HH:mm')}">01.01.2024 12:00</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-danger btn-action" 
+                                                        th:onclick="'deleteFavori(' + ${favori.id} + ')'" 
+                                                        title="Sil">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                <a th:href="@{'/kitaplar/' + ${favori.kitap?.id}}" 
+                                                   class="btn btn-sm btn-outline-info btn-action" 
+                                                   title="Kitabı Görüntüle" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(favoriler)}">
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">Henüz favori bulunmuyor.</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <nav th:if="${totalPages > 1}" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/favoriler(page=${currentPage - 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <li th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}" 
+                            class="page-item" 
+                            th:classappend="${pageNum == currentPage} ? 'active'">
+                            <a class="page-link" 
+                               th:href="@{/admin/favoriler(page=${pageNum}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir})}" 
+                               th:text="${pageNum + 1}">1</a>
+                        </li>
+                        
+                        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/favoriler(page=${currentPage + 1}, size=${size}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function deleteFavori(id) {
+            if (confirm('Bu favoriyi silmek istediğinizden emin misiniz?')) {
+                fetch('/api/favoriler/' + id, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Favori silinirken hata oluştu.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Favori silinirken hata oluştu.');
+                });
+            }
+        }
+
+        function exportToExcel() {
+            window.location.href = '/admin/favoriler/export/excel';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout(~{::title}, ~{::#content})">
+<head>
+    <title>Bize Ulaşın - Kitap Satış Sistemi</title>
+</head>
+<body>
+    <div id="content" th:fragment="content">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 fw-bold" style="color: #667eea;">📞 Bize Ulaşın</h1>
+                        <div class="bg-gradient" style="background: linear-gradient(45deg, #667eea, #764ba2); height: 4px; width: 100px; margin: 20px auto; border-radius: 2px;"></div>
+                        <p class="lead text-muted">Sorularınız veya geri bildirimleriniz için bize yazmaktan çekinmeyin.</p>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <!-- E-posta Kartı -->
+                        <div class="col-md-4">
+                            <div class="card shadow-lg border-0 h-100 contact-card">
+                                <div class="card-body text-center p-4">
+                                    <div class="contact-icon mb-3">
+                                        <i class="bi bi-envelope-fill" style="font-size: 3rem; color: #667eea;"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3" style="color: #764ba2;">E-posta</h5>
+                                    <p class="text-muted mb-3">Bize e-posta gönderin</p>
+                                    <a href="mailto:saricayiralperen@gmail.com" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-envelope"></i> saricayiralperen@gmail.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Telefon Kartı -->
+                        <div class="col-md-4">
+                            <div class="card shadow-lg border-0 h-100 contact-card">
+                                <div class="card-body text-center p-4">
+                                    <div class="contact-icon mb-3">
+                                        <i class="bi bi-telephone-fill" style="font-size: 3rem; color: #667eea;"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3" style="color: #764ba2;">Telefon</h5>
+                                    <p class="text-muted mb-3">Bizi arayın</p>
+                                    <a href="tel:+905555555555" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-telephone"></i> +90 555 555 55 55
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Adres Kartı -->
+                        <div class="col-md-4">
+                            <div class="card shadow-lg border-0 h-100 contact-card">
+                                <div class="card-body text-center p-4">
+                                    <div class="contact-icon mb-3">
+                                        <i class="bi bi-geo-alt-fill" style="font-size: 3rem; color: #667eea;"></i>
+                                    </div>
+                                    <h5 class="fw-bold mb-3" style="color: #764ba2;">Adres</h5>
+                                    <p class="text-muted mb-3">Bizi ziyaret edin</p>
+                                    <address class="mb-0">
+                                        <small class="text-muted">
+                                            No:88 Piri Reis Mah.<br>
+                                            Kocaeli Darıca, Türkiye
+                                        </small>
+                                    </address>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- İletişim Formu -->
+                    <div class="row mt-5">
+                        <div class="col-lg-8 mx-auto">
+                            <div class="card shadow-lg border-0">
+                                <div class="card-header text-center" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white;">
+                                    <h4 class="mb-0"><i class="bi bi-chat-dots"></i> Bize Mesaj Gönderin</h4>
+                                </div>
+                                <div class="card-body p-4">
+                                    <form>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="name" class="form-label fw-bold">Ad Soyad</label>
+                                                <input type="text" class="form-control" id="name" placeholder="Adınızı girin">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="email" class="form-label fw-bold">E-posta</label>
+                                                <input type="email" class="form-control" id="email" placeholder="E-posta adresinizi girin">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="subject" class="form-label fw-bold">Konu</label>
+                                            <input type="text" class="form-control" id="subject" placeholder="Mesaj konusunu girin">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="message" class="form-label fw-bold">Mesaj</label>
+                                            <textarea class="form-control" id="message" rows="5" placeholder="Mesajınızı buraya yazın..."></textarea>
+                                        </div>
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-lg" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none;">
+                                                <i class="bi bi-send"></i> Mesaj Gönder
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Çalışma Saatleri -->
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <div class="card shadow-lg border-0">
+                                <div class="card-header text-center" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white;">
+                                    <h4 class="mb-0"><i class="bi bi-clock"></i> Çalışma Saatleri</h4>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row text-center">
+                                        <div class="col-md-6">
+                                            <h5 class="fw-bold" style="color: #764ba2;">Hafta İçi</h5>
+                                            <p class="text-muted">Pazartesi - Cuma<br>09:00 - 18:00</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5 class="fw-bold" style="color: #764ba2;">Hafta Sonu</h5>
+                                            <p class="text-muted">Cumartesi - Pazar<br>10:00 - 16:00</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

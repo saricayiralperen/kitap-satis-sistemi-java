@@ -48,7 +48,7 @@ public interface FavoriRepository extends JpaRepository<Favori, Long> {
     /**
      * Kullanıcının favorilerini kitap bilgileri ile birlikte getirme
      */
-    @Query("SELECT f FROM Favori f LEFT JOIN f.kitap LEFT JOIN f.kitap.kategori WHERE f.kullaniciId = :kullaniciId")
+    @Query("SELECT f FROM Favori f LEFT JOIN FETCH f.kitap k LEFT JOIN FETCH k.kategori WHERE f.kullaniciId = :kullaniciId")
     List<Favori> findByKullaniciIdWithKitap(@Param("kullaniciId") Long kullaniciId);
     
     /**

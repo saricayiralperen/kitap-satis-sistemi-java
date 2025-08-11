@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitap Yönetimi - Admin Paneli</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar .nav-link {
+            color: var(--dark-color);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            min-height: calc(100vh - 76px);
+            border-radius: 20px 0 0 0;
+            box-shadow: -2px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .admin-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-admin {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .table-custom {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-custom thead {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .table-custom tbody tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+            background: white;
+        }
+
+        .book-image {
+            width: 50px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --light-color: #2d3748;
+            --dark-color: #e2e8f0;
+        }
+
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        }
+
+        [data-theme="dark"] .navbar-custom,
+        [data-theme="dark"] .sidebar,
+        [data-theme="dark"] .content,
+        [data-theme="dark"] .admin-card,
+        [data-theme="dark"] .table-custom {
+            background: rgba(45, 55, 72, 0.95);
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .sidebar .nav-link {
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .search-box {
+            background: rgba(45, 55, 72, 0.9);
+            color: #e2e8f0;
+        }
+
+        [data-theme="dark"] .search-box:focus {
+            background: #2d3748;
+        }
+    </style>
+</head>
+<body data-theme="light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/admin/dashboard}">
+                <i class="bi bi-shield-check me-2" style="color: var(--primary-color);"></i>
+                <span style="background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;">Admin Paneli</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <button id="themeToggle" class="btn btn-outline-secondary btn-sm me-3">
+                            <i class="bi bi-moon-fill" id="themeIcon"></i>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">Hoş Geldiniz, Admin!</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/logout}">
+                            <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/dashboard}">
+                                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/kategoriler}">
+                                <i class="bi bi-tags me-2"></i> Kategoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="@{/admin/kitaplar}">
+                                <i class="bi bi-book me-2"></i> Kitaplar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/kullanicilar}">
+                                <i class="bi bi-people me-2"></i> Kullanıcılar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/siparisler}">
+                                <i class="bi bi-receipt me-2"></i> Siparişler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/admin/favoriler}">
+                                <i class="bi bi-heart me-2"></i> Favoriler
+                            </a>
+                        </li>
+                        <li class="nav-item mt-auto">
+                            <a class="nav-link" th:href="@{/}">
+                                <i class="bi bi-house me-2"></i> Siteye Geri Dön
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">
+                        <i class="bi bi-book me-2" style="color: var(--primary-color);"></i>
+                        Kitap Yönetimi
+                    </h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a th:href="@{/admin/kitaplar/create}" class="btn btn-admin">
+                                <i class="bi bi-plus-circle"></i> Yeni Kitap Ekle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arama ve Filtreler -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control search-box" placeholder="Kitap ara..." id="searchInput">
+                            <button class="btn btn-admin" type="button">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select search-box" id="categoryFilter">
+                            <option value="">Tüm Kategoriler</option>
+                            <option th:each="kategori : ${kategoriler}" th:value="${kategori.id}" th:text="${kategori.ad}">Kategori</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select search-box" id="sortFilter">
+                            <option value="ad-asc">Ad (A-Z)</option>
+                            <option value="ad-desc">Ad (Z-A)</option>
+                            <option value="fiyat-asc">Fiyat (Düşük-Yüksek)</option>
+                            <option value="fiyat-desc">Fiyat (Yüksek-Düşük)</option>
+                            <option value="date-desc">En Yeni</option>
+                            <option value="date-asc">En Eski</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- İstatistikler -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="admin-card text-center p-3">
+                            <i class="bi bi-book-fill" style="font-size: 2rem; color: var(--primary-color);"></i>
+                            <h4 class="mt-2 mb-0" th:text="${totalElements ?: 0}">0</h4>
+                            <small class="text-muted">Toplam Kitap</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="admin-card text-center p-3">
+                            <i class="bi bi-check-circle" style="font-size: 2rem; color: var(--success-color);"></i>
+                            <h4 class="mt-2 mb-0">0</h4>
+                            <small class="text-muted">Stokta Var</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="admin-card text-center p-3">
+                            <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: var(--warning-color);"></i>
+                            <h4 class="mt-2 mb-0">0</h4>
+                            <small class="text-muted">Stok Azalıyor</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="admin-card text-center p-3">
+                            <i class="bi bi-star-fill" style="font-size: 2rem; color: var(--info-color);"></i>
+                            <h4 class="mt-2 mb-0">0</h4>
+                            <small class="text-muted">Popüler Kitap</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kitaplar Tablosu -->
+                <div class="admin-card">
+                    <div class="card-header" style="background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); color: white;">
+                        <h5 class="mb-0">
+                            <i class="bi bi-table me-2"></i>
+                            Kitap Listesi
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Resim</th>
+                                        <th>Kitap Adı</th>
+                                        <th>Yazar</th>
+                                        <th>Kategori</th>
+                                        <th>Fiyat</th>
+                                        <th>Stok</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="kitap : ${kitaplar}" th:if="${kitaplar != null and !kitaplar.isEmpty()}">
+                                        <td th:text="${kitap.id}">1</td>
+                                        <td>
+                                            <img th:src="${kitap.resimUrl ?: 'https://via.placeholder.com/50x70?text=Kitap'}" 
+                                                 class="book-image" alt="Kitap Resmi">
+                                        </td>
+                                        <td>
+                                            <strong th:text="${kitap.ad}">Kitap Adı</strong>
+                                            <br>
+                                            <small class="text-muted" th:text="${kitap.aciklama != null and kitap.aciklama.length() > 50 ? kitap.aciklama.substring(0, 50) + '...' : kitap.aciklama}">Kitap açıklaması...</small>
+                                        </td>
+                                        <td th:text="${kitap.yazar}">Yazar Adı</td>
+                                        <td>
+                                            <span class="badge bg-secondary badge-custom" th:text="${kitap.kategori != null ? kitap.kategori.ad : 'Kategori Yok'}">Kategori</span>
+                                        </td>
+                                        <td>
+                                            <strong th:text="${#numbers.formatDecimal(kitap.fiyat, 0, 2)} + ' ₺'">0.00 ₺</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-custom" 
+                                                  th:classappend="${kitap.stokMiktari > 10} ? 'bg-success' : (${kitap.stokMiktari > 0} ? 'bg-warning' : 'bg-danger')"
+                                                  th:text="${kitap.stokMiktari}">0</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-custom" 
+                                                  th:classappend="${kitap.stokMiktari > 0} ? 'bg-success' : 'bg-danger'"
+                                                  th:text="${kitap.stokMiktari > 0 ? 'Stokta' : 'Tükendi'}">Stokta</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a th:href="@{/admin/kitaplar/edit/{id}(id=${kitap.id})}" 
+                                                   class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <a th:href="@{/admin/kitaplar/detail/{id}(id=${kitap.id})}" 
+                                                   class="btn btn-sm btn-outline-info" title="Detay">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        title="Sil" th:onclick="'deleteBook(' + ${kitap.id} + ')'">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${kitaplar == null or kitaplar.isEmpty()}">
+                                        <td colspan="9" class="text-center py-4">
+                                            <i class="bi bi-inbox" style="font-size: 3rem; color: var(--secondary-color); opacity: 0.5;"></i>
+                                            <p class="mt-2 text-muted">Henüz kitap bulunmamaktadır.</p>
+                                            <a th:href="@{/admin/kitaplar/create}" class="btn btn-admin">
+                                                <i class="bi bi-plus-circle"></i> İlk Kitabı Ekle
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sayfalama -->
+                <div class="d-flex justify-content-between align-items-center mt-4" th:if="${kitaplar != null and !kitaplar.isEmpty()}">
+                    <div>
+                        <small class="text-muted">Toplam <span th:text="${totalElements ?: 0}">0</span> kitap gösteriliyor</small>
+                    </div>
+                    <nav>
+                        <ul class="pagination">
+                            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/kitaplar(page=${currentPage - 1}, size=${size ?: 10}, sortBy=${sortBy ?: 'ad'}, sortDir=${sortDir ?: 'asc'}, search=${search})}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/kitaplar(page=${i}, size=${size ?: 10}, sortBy=${sortBy ?: 'ad'}, sortDir=${sortDir ?: 'asc'}, search=${search})}" th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/kitaplar(page=${currentPage + 1}, size=${size ?: 10}, sortBy=${sortBy ?: 'ad'}, sortDir=${sortDir ?: 'asc'}, search=${search})}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Tema değiştirme
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            themeIcon.className = newTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // Sayfa yüklendiğinde tema ayarını kontrol et
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            body.setAttribute('data-theme', savedTheme);
+            themeIcon.className = savedTheme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+        });
+
+        // Arama fonksiyonu
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('tbody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Kategori filtresi
+        document.getElementById('categoryFilter').addEventListener('change', function() {
+            const selectedCategory = this.value;
+            const tableRows = document.querySelectorAll('tbody tr');
+            
+            tableRows.forEach(row => {
+                if (selectedCategory === '') {
+                    row.style.display = '';
+                } else {
+                    const categoryCell = row.querySelector('td:nth-child(5)');
+                    if (categoryCell) {
+                        const categoryText = categoryCell.textContent.trim();
+                        // Bu kısım kategori ID'si ile eşleştirme yapacak şekilde güncellenebilir
+                        row.style.display = '';
+                    }
+                }
+            });
+        });
+
+        // Sıralama filtresi
+        document.getElementById('sortFilter').addEventListener('change', function() {
+            const sortValue = this.value;
+            const [sortBy, sortDir] = sortValue.split('-');
+            
+            const currentUrl = new URL(window.location);
+            currentUrl.searchParams.set('sortBy', sortBy);
+            currentUrl.searchParams.set('sortDir', sortDir);
+            currentUrl.searchParams.set('page', '0'); // İlk sayfaya dön
+            
+            window.location.href = currentUrl.toString();
+        });
+
+        // Kitap silme fonksiyonu
+        function deleteBook(bookId) {
+            if (confirm('Bu kitabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                // AJAX ile silme işlemi yapılabilir
+                fetch(`/admin/kitaplar/delete/${bookId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Kitap silinirken bir hata oluştu.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Kitap silinirken bir hata oluştu.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -159,7 +159,8 @@
     </style>
 </head>
 <body>
-    <header>
+    <!-- Navbar Fragment -->
+    <header th:fragment="navbar">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand fw-bold" th:href="@{/}" style="color: #667eea; font-size: 1.5rem;">
@@ -236,7 +237,8 @@
         </main>
     </div>
 
-    <footer class="footer border-top text-muted">
+    <!-- Footer Fragment -->
+    <footer class="footer border-top text-muted" th:fragment="footer">
         <div class="container">
             <div class="row py-4">
                 <div class="col-md-4">

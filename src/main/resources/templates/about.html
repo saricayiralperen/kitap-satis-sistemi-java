@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="layout :: layout(~{::title}, ~{::#content})">
+<head>
+    <title>Hakkımızda - Kitap Satış Sistemi</title>
+</head>
+<body>
+    <div id="content" th:fragment="content">
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 fw-bold" style="color: #667eea;">📚 Hakkımızda</h1>
+                        <div class="bg-gradient" style="background: linear-gradient(45deg, #667eea, #764ba2); height: 4px; width: 100px; margin: 20px auto; border-radius: 2px;"></div>
+                        <p class="lead text-muted">Kitap severlerin buluşma noktası</p>
+                    </div>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card shadow-lg border-0 h-100">
+                                <div class="card-body p-4">
+                                    <div class="text-center mb-3">
+                                        <i class="bi bi-book-half" style="font-size: 3rem; color: #667eea;"></i>
+                                    </div>
+                                    <h4 class="fw-bold mb-3 text-center" style="color: #764ba2;">Misyonumuz</h4>
+                                    <p class="text-muted">Kitap severlere en kaliteli kitapları en uygun fiyatlarla sunmak ve okuma kültürünü yaygınlaştırmak için çalışıyoruz. Geniş kitap koleksiyonumuzla her yaştan okuyucuya hitap ediyoruz.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card shadow-lg border-0 h-100">
+                                <div class="card-body p-4">
+                                    <div class="text-center mb-3">
+                                        <i class="bi bi-eye" style="font-size: 3rem; color: #667eea;"></i>
+                                    </div>
+                                    <h4 class="fw-bold mb-3 text-center" style="color: #764ba2;">Vizyonumuz</h4>
+                                    <p class="text-muted">Türkiye'nin en güvenilir ve kapsamlı online kitap platformu olmak. Teknoloji ile edebiyatı buluşturarak, okuma deneyimini daha keyifli hale getirmek.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-5">
+                        <div class="col-12">
+                            <div class="card shadow-lg border-0">
+                                <div class="card-header text-center" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white;">
+                                    <h4 class="mb-0"><i class="bi bi-award"></i> Neden Bizi Tercih Etmelisiniz?</h4>
+                                </div>
+                                <div class="card-body p-4">
+                                    <div class="row">
+                                        <div class="col-md-4 text-center mb-3">
+                                            <i class="bi bi-truck" style="font-size: 2rem; color: #667eea;"></i>
+                                            <h5 class="mt-2 fw-bold">Hızlı Kargo</h5>
+                                            <p class="text-muted">Siparişlerinizi en kısa sürede kapınıza getiriyoruz.</p>
+                                        </div>
+                                        <div class="col-md-4 text-center mb-3">
+                                            <i class="bi bi-shield-check" style="font-size: 2rem; color: #667eea;"></i>
+                                            <h5 class="mt-2 fw-bold">Güvenli Alışveriş</h5>
+                                            <p class="text-muted">SSL sertifikası ile korunan güvenli ödeme sistemi.</p>
+                                        </div>
+                                        <div class="col-md-4 text-center mb-3">
+                                            <i class="bi bi-headset" style="font-size: 2rem; color: #667eea;"></i>
+                                            <h5 class="mt-2 fw-bold">7/24 Destek</h5>
+                                            <p class="text-muted">Müşteri hizmetlerimiz her zaman yanınızda.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-5">
+                        <div class="col-12 text-center">
+                            <div class="card shadow-lg border-0">
+                                <div class="card-body p-5">
+                                    <h3 class="fw-bold mb-4" style="color: #764ba2;">İstatistiklerimiz</h3>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <h2 class="fw-bold" style="color: #667eea;">10,000+</h2>
+                                            <p class="text-muted">Kitap Çeşidi</p>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <h2 class="fw-bold" style="color: #667eea;">50,000+</h2>
+                                            <p class="text-muted">Mutlu Müşteri</p>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <h2 class="fw-bold" style="color: #667eea;">100+</h2>
+                                            <p class="text-muted">Kategori</p>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <h2 class="fw-bold" style="color: #667eea;">5 Yıl</h2>
+                                            <p class="text-muted">Tecrübe</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

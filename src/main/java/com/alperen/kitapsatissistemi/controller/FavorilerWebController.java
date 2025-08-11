@@ -34,11 +34,16 @@ public class FavorilerWebController {
         }
         
         try {
-            List<Favori> favoriler = favoriService.getFavorilerByKullaniciId(kullaniciId);
+            List<Favori> favoriler = favoriService.getFavorilerByKullaniciIdWithDetails(kullaniciId);
             model.addAttribute("favoriler", favoriler);
             model.addAttribute("title", "Favorilerim");
         } catch (Exception e) {
+            System.out.println("=== FAVORILER HATA DETAYI ===");
+            System.out.println("Hata mesajı: " + e.getMessage());
+            System.out.println("Hata sınıfı: " + e.getClass().getName());
+            e.printStackTrace();
             model.addAttribute("errorMessage", "Favoriler yüklenirken hata oluştu: " + e.getMessage());
+            model.addAttribute("favoriler", new java.util.ArrayList<>());
         }
         
         return "favoriler";

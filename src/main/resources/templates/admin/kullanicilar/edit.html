@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Düzenle - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0">
+                <div class="sidebar d-flex flex-column p-3">
+                    <h4 class="text-white mb-4">
+                        <i class="fas fa-book me-2"></i>Kitap Yönetimi
+                    </h4>
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item">
+                            <a href="/admin/dashboard" class="nav-link">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/kitaplar" class="nav-link">
+                                <i class="fas fa-book me-2"></i>Kitaplar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/kategoriler" class="nav-link">
+                                <i class="fas fa-tags me-2"></i>Kategoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/kullanicilar" class="nav-link active">
+                                <i class="fas fa-users me-2"></i>Kullanıcılar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/siparisler" class="nav-link">
+                                <i class="fas fa-shopping-cart me-2"></i>Siparişler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/favoriler" class="nav-link">
+                                <i class="fas fa-heart me-2"></i>Favoriler
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/raporlar" class="nav-link">
+                                <i class="fas fa-chart-bar me-2"></i>Raporlar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/admin/ayarlar" class="nav-link">
+                                <i class="fas fa-cog me-2"></i>Ayarlar
+                            </a>
+                        </li>
+                    </ul>
+                    <hr class="text-white">
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <strong>Admin</strong>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+                            <li><a class="dropdown-item" href="/admin/logout">Çıkış Yap</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10">
+                <div class="main-content p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-user-edit me-2"></i>Kullanıcı Düzenle</h2>
+                        <a href="/admin/kullanicilar" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                        </a>
+                    </div>
+
+                    <!-- Alert Messages -->
+                    <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span th:text="${successMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <span th:text="${errorMessage}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+
+                    <!-- Form Card -->
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-user me-2"></i>Kullanıcı Bilgileri</h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/admin/kullanicilar/edit/{id}(id=${kullanici.id})}" method="post" th:object="${kullanici}">
+                                <input type="hidden" th:field="*{id}">
+                                
+                                <div class="mb-3">
+                                    <label for="adSoyad" class="form-label">Ad Soyad *</label>
+                                    <input type="text" class="form-control" id="adSoyad" th:field="*{adSoyad}" required>
+                                    <div th:if="${#fields.hasErrors('adSoyad')}" class="text-danger">
+                                        <small th:errors="*{adSoyad}"></small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">E-posta *</label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                    <div th:if="${#fields.hasErrors('email')}" class="text-danger">
+                                        <small th:errors="*{email}"></small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="sifreHash" class="form-label">Yeni Şifre</label>
+                                    <input type="password" class="form-control" id="sifreHash" th:field="*{sifreHash}" placeholder="Boş bırakırsanız mevcut şifre korunur">
+                                    <div th:if="${#fields.hasErrors('sifreHash')}" class="text-danger">
+                                        <small th:errors="*{sifreHash}"></small>
+                                    </div>
+                                    <small class="form-text text-muted">Şifreyi değiştirmek istemiyorsanız bu alanı boş bırakın.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="rol" class="form-label">Rol *</label>
+                                    <select class="form-control" id="rol" th:field="*{rol}" required>
+                                        <option value="User">Kullanıcı</option>
+                                        <option value="Admin">Admin</option>
+                                    </select>
+                                    <div th:if="${#fields.hasErrors('rol')}" class="text-danger">
+                                        <small th:errors="*{rol}"></small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Kayıt Tarihi</label>
+                                    <input type="text" class="form-control" th:value="${#temporals.format(kullanici.kayitTarihi, 'dd/MM/yyyy HH:mm')}" readonly>
+                                    <small class="form-text text-muted">Bu alan değiştirilemez.</small>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="/admin/kullanicilar" class="btn btn-outline-secondary me-md-2">
+                                        <i class="fas fa-times me-2"></i>İptal
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Güncelle
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Info Card -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Bilgilendirme</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0">
+                                <li>Ad Soyad ve E-posta alanları zorunludur.</li>
+                                <li>E-posta adresi benzersiz olmalıdır.</li>
+                                <li>Şifre alanını boş bırakırsanız mevcut şifre korunur.</li>
+                                <li>Admin rolü tüm yetkilere sahiptir.</li>
+                                <li>Kayıt tarihi değiştirilemez.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -218,6 +218,33 @@ public class AdminKitaplarController {
     }
 
     /**
+     * Kitap detay sayfası
+     * GET /admin/kitaplar/detail/{id}
+     */
+    @GetMapping("/detail/{id}")
+    public String detail(@PathVariable Long id, Model model, HttpSession session) {
+        // Admin kontrolü
+        if (!isAdmin(session)) {
+            return "redirect:/admin/login";
+        }
+        
+        try {
+            Optional<Kitap> kitapOpt = kitapService.findById(id);
+            if (kitapOpt.isPresent()) {
+                model.addAttribute("kitap", kitapOpt.get());
+                model.addAttribute("title", "Kitap Detayı");
+                return "admin/kitaplar/detail";
+            } else {
+                model.addAttribute("errorMessage", "Kitap bulunamadı.");
+                return "redirect:/admin/kitaplar";
+            }
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Kitap yüklenirken hata oluştu: " + e.getMessage());
+            return "redirect:/admin/kitaplar";
+        }
+    }
+
+    /**
      * Kitap silme
      * POST /admin/kitaplar/delete/{id}
      */
