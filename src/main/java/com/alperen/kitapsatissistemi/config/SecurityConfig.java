@@ -34,8 +34,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/kategori-listesi").permitAll()
                 .antMatchers("/sepet", "/sepet/**").permitAll()
                 .antMatchers("/favoriler", "/favoriler/**").permitAll()
+                .antMatchers("/siparisler", "/siparisler/**").permitAll()
                 .antMatchers("/kullanici", "/kullanici/**").permitAll()
                 .antMatchers("/about", "/contact", "/privacy").permitAll()
+                .antMatchers("/session-test").permitAll()
                 // Admin sayfaları - geçici olarak herkese açık
                 .antMatchers("/admin", "/admin/**").permitAll()
                 // Static resources
