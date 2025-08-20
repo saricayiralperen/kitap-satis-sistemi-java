@@ -2,6 +2,8 @@ package com.alperen.kitapsatissistemi.entity;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,10 +20,6 @@ public class Siparis {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @NotNull(message = "Kullanıcı ID zorunludur.")
-    @Column(name = "kullanici_id", nullable = false)
-    private Long kullaniciId;
-    
     @Column(name = "siparis_tarihi", nullable = false)
     private LocalDateTime siparisTarihi;
     
@@ -29,14 +27,17 @@ public class Siparis {
     @Column(name = "toplam_tutar", nullable = false, precision = 18, scale = 2)
     private BigDecimal toplamTutar;
     
+    @NotBlank(message = "Durum zorunludur.")
+    @Size(max = 50, message = "Durum en fazla 50 karakter olabilir.")
     @Column(name = "durum", length = 50)
     private String durum = "Beklemede";
     
+    @NotNull(message = "Kullanıcı zorunludur.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "kullanici_id", insertable = false, updatable = false)
+    @JoinColumn(name = "kullanici_id", nullable = false)
     private Kullanici kullanici;
     
-    @OneToMany(mappedBy = "siparis", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "siparis", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<SiparisDetay> siparisDetaylari = new ArrayList<>();
     
     // Constructors
@@ -45,9 +46,9 @@ public class Siparis {
         this.durum = "Beklemede";
     }
     
-    public Siparis(Long kullaniciId, BigDecimal toplamTutar) {
+    public Siparis(Kullanici kullanici, BigDecimal toplamTutar) {
         this();
-        this.kullaniciId = kullaniciId;
+        this.kullanici = kullanici;
         this.toplamTutar = toplamTutar;
     }
     
@@ -61,11 +62,7 @@ public class Siparis {
     }
     
     public Long getKullaniciId() {
-        return kullaniciId;
-    }
-    
-    public void setKullaniciId(Long kullaniciId) {
-        this.kullaniciId = kullaniciId;
+        return kullanici != null ? kullanici.getId() : null;
     }
     
     public LocalDateTime getSiparisTarihi() {
@@ -145,7 +142,7 @@ public class Siparis {
     public String toString() {
         return "Siparis{" +
                 "id=" + id +
-                ", kullaniciId=" + kullaniciId +
+                ", kullaniciId=" + getKullaniciId() +
                 ", siparisTarihi=" + siparisTarihi +
                 ", toplamTutar=" + toplamTutar +
                 ", durum='" + durum + '\'' +

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Sipariş Yönetimi</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-shopping-cart"></i> Sipariş Yönetimi
+                <small class="text-muted" th:text="'(' + ${siparisler.totalElements} + ' sipariş)'">0 sipariş</small>
+            </h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter"></i> Filtrele
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler(durum='BEKLEMEDE')}">Beklemede</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler(durum='ONAYLANDI')}">Onaylandı</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler(durum='KARGOLANDI')}">Kargolandı</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler(durum='TESLIM_EDILDI')}">Teslim Edildi</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler(durum='IPTAL_EDILDI')}">İptal Edildi</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler}">Tümü</a></li>
+                    </ul>
+                </div>
+                <div class="btn-group me-2">
+                    <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-download"></i> Dışa Aktar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler/export/excel}">Excel</a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler/export/pdf}">PDF</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Toplam Sipariş
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${toplamSiparis ?: 0}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Toplam Gelir
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${toplamGelir ?: 0} + ' ₺'">0 ₺</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Bekleyen Siparişler
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${bekleyenSiparisler ?: 0}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Bu Ay
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${buAySiparisler ?: 0}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-search"></i> Arama ve Filtreleme
+                </h6>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/admin/siparisler}" method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="search" class="form-label">Arama</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               th:value="${param.search}" placeholder="Sipariş No, Kullanıcı...">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="durum" class="form-label">Durum</label>
+                        <select class="form-select" id="durum" name="durum">
+                            <option value="">Tümü</option>
+                            <option value="BEKLEMEDE" th:selected="${param.durum == 'BEKLEMEDE'}">Beklemede</option>
+                            <option value="ONAYLANDI" th:selected="${param.durum == 'ONAYLANDI'}">Onaylandı</option>
+                            <option value="KARGOLANDI" th:selected="${param.durum == 'KARGOLANDI'}">Kargolandı</option>
+                            <option value="TESLIM_EDILDI" th:selected="${param.durum == 'TESLIM_EDILDI'}">Teslim Edildi</option>
+                            <option value="IPTAL_EDILDI" th:selected="${param.durum == 'IPTAL_EDILDI'}">İptal Edildi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="baslangicTarihi" class="form-label">Başlangıç</label>
+                        <input type="date" class="form-control" id="baslangicTarihi" name="baslangicTarihi" 
+                               th:value="${param.baslangicTarihi}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="bitisTarihi" class="form-label">Bitiş</label>
+                        <input type="date" class="form-control" id="bitisTarihi" name="bitisTarihi" 
+                               th:value="${param.bitisTarihi}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="minTutar" class="form-label">Min Tutar</label>
+                        <input type="number" class="form-control" id="minTutar" name="minTutar" 
+                               th:value="${param.minTutar}" placeholder="0" step="0.01">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Orders Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-list"></i> Sipariş Listesi
+                </h6>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i> İşlemler
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="bulkAction('approve')">Seçilenleri Onayla</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="bulkAction('ship')">Seçilenleri Kargola</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="bulkAction('deliver')">Seçilenleri Teslim Et</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="bulkAction('cancel')">Seçilenleri İptal Et</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th width="30">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th>Sipariş No</th>
+                                <th>Kullanıcı</th>
+                                <th>Tarih</th>
+                                <th>Tutar</th>
+                                <th>Durum</th>
+                                <th>Ödeme</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="siparis : ${siparisler.content}" th:if="${!siparisler.content.empty}">
+                                <td>
+                                    <input type="checkbox" class="siparis-checkbox" th:value="${siparis.id}">
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/siparisler/{id}(id=${siparis.id})}" 
+                                       class="text-decoration-none fw-bold" 
+                                       th:text="'#' + ${siparis.id}">#1</a>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar avatar-sm me-2">
+                                            <div class="avatar-title bg-primary rounded-circle">
+                                                <span th:text="${siparis.kullanici.ad.substring(0,1).toUpperCase()}">A</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold" th:text="${siparis.kullanici.ad + ' ' + siparis.kullanici.soyad}">Ad Soyad</div>
+                                            <small class="text-muted" th:text="${siparis.kullanici.email}">email@example.com</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div th:text="${#temporals.format(siparis.olusturmaTarihi, 'dd/MM/yyyy')}">01/01/2024</div>
+                                    <small class="text-muted" th:text="${#temporals.format(siparis.olusturmaTarihi, 'HH:mm')}">12:00</small>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success" th:text="${siparis.toplamTutar} + ' ₺'">0 ₺</span>
+                                </td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${siparis.durum == 'BEKLEMEDE'} ? 'bg-warning' : 
+                                                         (${siparis.durum == 'ONAYLANDI'} ? 'bg-info' : 
+                                                         (${siparis.durum == 'KARGOLANDI'} ? 'bg-primary' : 
+                                                         (${siparis.durum == 'TESLIM_EDILDI'} ? 'bg-success' : 'bg-danger')))"
+                                          th:text="${siparis.durum == 'BEKLEMEDE'} ? 'Beklemede' : 
+                                                  (${siparis.durum == 'ONAYLANDI'} ? 'Onaylandı' : 
+                                                  (${siparis.durum == 'KARGOLANDI'} ? 'Kargolandı' : 
+                                                  (${siparis.durum == 'TESLIM_EDILDI'} ? 'Teslim Edildi' : 'İptal Edildi')))">Durum</span>
+                                </td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${siparis.odemeDurumu == 'ODENDI'} ? 'bg-success' : 
+                                                         (${siparis.odemeDurumu == 'BEKLEMEDE'} ? 'bg-warning' : 'bg-danger')"
+                                          th:text="${siparis.odemeDurumu == 'ODENDI'} ? 'Ödendi' : 
+                                                  (${siparis.odemeDurumu == 'BEKLEMEDE'} ? 'Beklemede' : 'İade Edildi')">Ödeme</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/admin/siparisler/{id}(id=${siparis.id})}" 
+                                           class="btn btn-sm btn-outline-info" title="Görüntüle">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/admin/siparisler/{id}/edit(id=${siparis.id})}" 
+                                           class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-success dropdown-toggle" 
+                                                data-bs-toggle="dropdown" title="Durum Değiştir">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li th:if="${siparis.durum == 'BEKLEMEDE'}">
+                                                <a class="dropdown-item" th:href="@{/admin/siparisler/{id}/status(id=${siparis.id}, status='ONAYLANDI')}">
+                                                    <i class="fas fa-check text-info"></i> Onayla
+                                                </a>
+                                            </li>
+                                            <li th:if="${siparis.durum == 'ONAYLANDI'}">
+                                                <a class="dropdown-item" th:href="@{/admin/siparisler/{id}/status(id=${siparis.id}, status='KARGOLANDI')}">
+                                                    <i class="fas fa-shipping-fast text-primary"></i> Kargola
+                                                </a>
+                                            </li>
+                                            <li th:if="${siparis.durum == 'KARGOLANDI'}">
+                                                <a class="dropdown-item" th:href="@{/admin/siparisler/{id}/status(id=${siparis.id}, status='TESLIM_EDILDI')}">
+                                                    <i class="fas fa-check-circle text-success"></i> Teslim Et
+                                                </a>
+                                            </li>
+                                            <li th:if="${siparis.durum != 'IPTAL_EDILDI' and siparis.durum != 'TESLIM_EDILDI'}">
+                                                <li><hr class="dropdown-divider"></li>
+                                                <a class="dropdown-item text-danger" 
+                                                   th:onclick="'confirmCancel(' + ${siparis.id} + ', \'' + ${siparis.id} + '\')'"
+                                                   href="#">
+                                                    <i class="fas fa-times"></i> İptal Et
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${siparisler.content.empty}">
+                                <td colspan="8" class="text-center py-4">
+                                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">Sipariş bulunamadı</h5>
+                                    <p class="text-muted">Arama kriterlerinizi değiştirerek tekrar deneyin.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <nav th:if="${siparisler.totalPages > 1}" aria-label="Sayfa navigasyonu">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${siparisler.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/siparisler(page=${siparisler.number - 1}, size=${siparisler.size}, search=${param.search}, durum=${param.durum}, baslangicTarihi=${param.baslangicTarihi}, bitisTarihi=${param.bitisTarihi}, minTutar=${param.minTutar})}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <li th:each="pageNum : ${#numbers.sequence(0, siparisler.totalPages - 1)}" 
+                            class="page-item" 
+                            th:classappend="${pageNum == siparisler.number} ? 'active'">
+                            <a class="page-link" 
+                               th:href="@{/admin/siparisler(page=${pageNum}, size=${siparisler.size}, search=${param.search}, durum=${param.durum}, baslangicTarihi=${param.baslangicTarihi}, bitisTarihi=${param.bitisTarihi}, minTutar=${param.minTutar})}"
+                               th:text="${pageNum + 1}">1</a>
+                        </li>
+                        
+                        <li class="page-item" th:classappend="${siparisler.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/siparisler(page=${siparisler.number + 1}, size=${siparisler.size}, search=${param.search}, durum=${param.durum}, baslangicTarihi=${param.baslangicTarihi}, bitisTarihi=${param.bitisTarihi}, minTutar=${param.minTutar})}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Cancel Confirmation Modal -->
+        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cancelModalLabel">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Sipariş İptal
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong id="cancelSiparisNo"></strong> numaralı siparişi iptal etmek istediğinizden emin misiniz?</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Uyarı:</strong> İptal edilen siparişler geri alınamaz.
+                        </div>
+                        <div class="mb-3">
+                            <label for="iptalNedeni" class="form-label">İptal Nedeni</label>
+                            <select class="form-select" id="iptalNedeni" name="iptalNedeni">
+                                <option value="">Neden seçiniz</option>
+                                <option value="Stok yetersizliği">Stok yetersizliği</option>
+                                <option value="Ödeme problemi">Ödeme problemi</option>
+                                <option value="Müşteri talebi">Müşteri talebi</option>
+                                <option value="Teknik sorun">Teknik sorun</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="iptalAciklama" class="form-label">Açıklama (İsteğe bağlı)</label>
+                            <textarea class="form-control" id="iptalAciklama" name="iptalAciklama" rows="3" placeholder="İptal nedeni hakkında detay verebilirsiniz..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                        <form id="cancelForm" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="patch">
+                            <input type="hidden" name="durum" value="IPTAL_EDILDI">
+                            <input type="hidden" name="iptalNedeni" id="hiddenIptalNedeni">
+                            <input type="hidden" name="iptalAciklama" id="hiddenIptalAciklama">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times"></i> İptal Et
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function confirmCancel(siparisId, siparisNo) {
+            const cancelForm = document.getElementById('cancelForm');
+            const cancelSiparisNo = document.getElementById('cancelSiparisNo');
+            
+            cancelForm.action = '/admin/siparisler/' + siparisId + '/status';
+            cancelSiparisNo.textContent = '#' + siparisNo;
+            
+            const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            cancelModal.show();
+        }
+        
+        // Update hidden fields when modal form is submitted
+        document.getElementById('cancelForm').addEventListener('submit', function() {
+            document.getElementById('hiddenIptalNedeni').value = document.getElementById('iptalNedeni').value;
+            document.getElementById('hiddenIptalAciklama').value = document.getElementById('iptalAciklama').value;
+        });
+        
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.siparis-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+        
+        function bulkAction(action) {
+            const selectedIds = [];
+            const checkboxes = document.querySelectorAll('.siparis-checkbox:checked');
+            
+            checkboxes.forEach(checkbox => {
+                selectedIds.push(checkbox.value);
+            });
+            
+            if (selectedIds.length === 0) {
+                alert('Lütfen en az bir sipariş seçin.');
+                return;
+            }
+            
+            let actionText = '';
+            let actionUrl = '';
+            
+            switch(action) {
+                case 'approve':
+                    actionText = 'onayla';
+                    actionUrl = '/admin/siparisler/bulk/approve';
+                    break;
+                case 'ship':
+                    actionText = 'kargola';
+                    actionUrl = '/admin/siparisler/bulk/ship';
+                    break;
+                case 'deliver':
+                    actionText = 'teslim et';
+                    actionUrl = '/admin/siparisler/bulk/deliver';
+                    break;
+                case 'cancel':
+                    actionText = 'iptal et';
+                    actionUrl = '/admin/siparisler/bulk/cancel';
+                    break;
+            }
+            
+            if (confirm(`Seçilen ${selectedIds.length} siparişi ${actionText}mak istediğinizden emin misiniz?`)) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = actionUrl;
+                
+                selectedIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'siparisIds';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

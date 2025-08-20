@@ -4,6 +4,13 @@ import com.alperen.kitapsatissistemi.entity.Kullanici;
 import com.alperen.kitapsatissistemi.entity.Siparis;
 import com.alperen.kitapsatissistemi.service.KullaniciService;
 import com.alperen.kitapsatissistemi.service.SiparisService;
+import com.alperen.kitapsatissistemi.service.SecurityAuditService;
+import com.alperen.kitapsatissistemi.util.InputSanitizer;
+import com.alperen.kitapsatissistemi.dto.LoginRequest;
+import com.alperen.kitapsatissistemi.dto.RegisterRequest;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
+import com.alperen.kitapsatissistemi.exception.DuplicateEntityException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,9 +19,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * KullaniciWebController - Kullanıcı web sayfaları için controller
@@ -29,6 +42,12 @@ public class KullaniciWebController {
     
     @Autowired
     private SiparisService siparisService;
+    
+    @Autowired
+    private SecurityAuditService securityAuditService;
+    
+    @Autowired
+    private InputSanitizer inputSanitizer;
 
     /**
      * Kullanıcı giriş sayfası
@@ -45,29 +64,60 @@ public class KullaniciWebController {
      * POST /kullanici/login
      */
     @PostMapping("/login")
-    public String login(@RequestParam String email,
-                       @RequestParam String sifre,
+    public String login(@Valid @ModelAttribute LoginRequest loginRequest,
+                       BindingResult bindingResult,
                        HttpSession session,
-                       RedirectAttributes redirectAttributes,
-                       Model model) {
+                        RedirectAttributes redirectAttributes,
+                        Model model,
+                        HttpServletRequest request) {
+        String ipAddress = securityAuditService.getClientIpAddress(request);
+        String userAgent = securityAuditService.getUserAgent(request);
+        
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("title", "Kullanıcı Girişi");
+            return "kullanici/login";
+        }
+        
         try {
-            Optional<Kullanici> kullaniciOpt = kullaniciService.authenticateKullanici(email, sifre);
+            Optional<Kullanici> kullaniciOpt = kullaniciService.authenticateKullanici(loginRequest.getEmail(), loginRequest.getSifre());
             
             if (kullaniciOpt.isPresent()) {
                 Kullanici kullanici = kullaniciOpt.get();
                 
-                // Session bilgilerini set et
+                // Session'a kullanıcı bilgilerini kaydet
+                session.setAttribute("IsLoggedIn", true);
                 session.setAttribute("KullaniciId", kullanici.getId());
                 session.setAttribute("KullaniciAd", kullanici.getAdSoyad());
                 session.setAttribute("KullaniciEmail", kullanici.getEmail());
                 session.setAttribute("KullaniciRol", kullanici.getRol());
-                session.setAttribute("IsLoggedIn", true);
                 
+                // Spring Security authentication köprüsü (rolleri SecurityContext'e aktar)
+                // ROLE_ prefix'i gereklidir; veritabanındaki roller (Admin/User) buna göre dönüştürülür
+                String roleUpper = kullanici.getRol() != null ? kullanici.getRol().toUpperCase() : "USER";
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + roleUpper);
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        kullanici.getEmail(),
+                        null,
+                        java.util.Collections.singletonList(authority)
+                );
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                
+                securityAuditService.logSuccessfulLogin(loginRequest.getEmail(), ipAddress, userAgent);
                 redirectAttributes.addFlashAttribute("successMessage", "Başarıyla giriş yaptınız!");
+                
+                // Return URL varsa oraya yönlendir
+                String returnUrl = (String) redirectAttributes.getFlashAttributes().get("returnUrl");
+                if (returnUrl != null && !returnUrl.isEmpty()) {
+                    return "redirect:" + returnUrl;
+                }
+                
                 return "redirect:/";
             } else {
+                securityAuditService.logFailedLogin(loginRequest.getEmail(), ipAddress, userAgent, "Invalid credentials");
                 model.addAttribute("errorMessage", "Email veya şifre hatalı.");
             }
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Giriş sırasında bir hata oluştu: " + e.getMessage());
         }
@@ -92,22 +142,39 @@ public class KullaniciWebController {
      * POST /kullanici/register
      */
     @PostMapping("/register")
-    public String register(@RequestParam String adSoyad,
-                          @RequestParam String email,
-                          @RequestParam String sifre,
-                          @RequestParam String sifreTekrar,
+    public String register(@Valid @ModelAttribute RegisterRequest registerRequest,
+                          BindingResult bindingResult,
                           RedirectAttributes redirectAttributes,
-                          Model model) {
+                          Model model,
+                          HttpServletRequest request) {
+        String ipAddress = securityAuditService.getClientIpAddress(request);
+        String userAgent = securityAuditService.getUserAgent(request);
+        
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("title", "Kullanıcı Kaydı");
+            return "kullanici/register";
+        }
+        
+        // Input sanitization kontrolü
+        if (!inputSanitizer.isSafeInput(registerRequest.getAdSoyad()) || 
+            !inputSanitizer.isSafeInput(registerRequest.getEmail()) ||
+            !inputSanitizer.isSafeInput(registerRequest.getSifre())) {
+            securityAuditService.logSuspiciousInput(ipAddress, registerRequest.getEmail(), "/kullanici/register", userAgent);
+            model.addAttribute("errorMessage", "Geçersiz kayıt verisi.");
+            model.addAttribute("title", "Kullanıcı Kaydı");
+            return "kullanici/register";
+        }
+        
         try {
             // Şifre kontrolü
-            if (!sifre.equals(sifreTekrar)) {
+            if (!registerRequest.isPasswordMatching()) {
                 model.addAttribute("errorMessage", "Şifreler eşleşmiyor.");
                 model.addAttribute("title", "Kullanıcı Kaydı");
                 return "kullanici/register";
             }
             
             // Email kontrolü
-            if (kullaniciService.existsByEmail(email)) {
+            if (kullaniciService.existsByEmail(registerRequest.getEmail())) {
                 model.addAttribute("errorMessage", "Bu email adresi zaten kayıtlı.");
                 model.addAttribute("title", "Kullanıcı Kaydı");
                 return "kullanici/register";
@@ -115,12 +182,13 @@ public class KullaniciWebController {
             
             // Yeni kullanıcı oluştur
             Kullanici kullanici = new Kullanici();
-            kullanici.setAdSoyad(adSoyad);
-            kullanici.setEmail(email);
+            kullanici.setAdSoyad(inputSanitizer.sanitizeAlphanumeric(registerRequest.getAdSoyad()));
+            kullanici.setEmail(inputSanitizer.sanitizeEmail(registerRequest.getEmail()));
             kullanici.setRol("User");
             
-            kullaniciService.registerKullanici(kullanici, sifre);
+            kullaniciService.registerKullanici(kullanici, registerRequest.getSifre());
             
+            securityAuditService.logUserRegistration(registerRequest.getEmail(), ipAddress, userAgent);
             redirectAttributes.addFlashAttribute("successMessage", "Kayıt başarılı! Şimdi giriş yapabilirsiniz.");
             return "redirect:/kullanici/login";
             

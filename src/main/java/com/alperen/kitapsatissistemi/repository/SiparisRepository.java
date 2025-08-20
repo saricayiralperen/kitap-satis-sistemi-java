@@ -3,6 +3,7 @@ package com.alperen.kitapsatissistemi.repository;
 import com.alperen.kitapsatissistemi.entity.Siparis;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,7 +23,7 @@ public interface SiparisRepository extends JpaRepository<Siparis, Long> {
     /**
      * Kullanıcının tüm siparişlerini bulma
      */
-    List<Siparis> findByKullaniciId(Long kullaniciId);
+    List<Siparis> findByKullanici_Id(Long kullaniciId);
     
     /**
      * Duruma göre siparişleri bulma
@@ -32,7 +33,7 @@ public interface SiparisRepository extends JpaRepository<Siparis, Long> {
     /**
      * Kullanıcı ve duruma göre siparişleri bulma
      */
-    List<Siparis> findByKullaniciIdAndDurum(Long kullaniciId, String durum);
+    List<Siparis> findByKullanici_IdAndDurum(Long kullaniciId, String durum);
     
     /**
      * Belirli tarihten sonraki siparişleri bulma
@@ -57,19 +58,19 @@ public interface SiparisRepository extends JpaRepository<Siparis, Long> {
     /**
      * Kullanıcının siparişlerini sipariş detayları ile birlikte getirme
      */
-    @Query("SELECT s FROM Siparis s LEFT JOIN s.siparisDetaylari WHERE s.kullaniciId = :kullaniciId")
-    List<Siparis> findByKullaniciIdWithDetaylar(@Param("kullaniciId") Long kullaniciId);
+    @Query("SELECT s FROM Siparis s LEFT JOIN FETCH s.siparisDetaylari WHERE s.kullanici.id = :kullanici_Id")
+    List<Siparis> findByKullanici_IdWithDetaylar(@Param("kullanici_Id") Long kullaniciId);
     
     /**
      * Sipariş detayları ile birlikte sipariş getirme
      */
-    @Query("SELECT s FROM Siparis s LEFT JOIN s.siparisDetaylari sd LEFT JOIN sd.kitap WHERE s.id = :id")
+    @Query("SELECT s FROM Siparis s LEFT JOIN FETCH s.siparisDetaylari sd LEFT JOIN FETCH sd.kitap WHERE s.id = :id")
     Optional<Siparis> findByIdWithDetaylar(@Param("id") Long id);
     
     /**
      * Kullanıcının sipariş sayısını bulma
      */
-    long countByKullaniciId(Long kullaniciId);
+    long countByKullanici_Id(Long kullaniciId);
     
     /**
      * Duruma göre sipariş sayısını bulma
@@ -79,8 +80,8 @@ public interface SiparisRepository extends JpaRepository<Siparis, Long> {
     /**
      * Kullanıcının toplam harcamasını bulma
      */
-    @Query("SELECT COALESCE(SUM(s.toplamTutar), 0) FROM Siparis s WHERE s.kullaniciId = :kullaniciId AND s.durum = 'Onaylandı'")
-    BigDecimal findToplamHarcamaByKullaniciId(@Param("kullaniciId") Long kullaniciId);
+    @Query("SELECT COALESCE(SUM(s.toplamTutar), 0) FROM Siparis s WHERE s.kullanici.id = :kullanici_Id AND s.durum = 'Onaylandı'")
+    BigDecimal findToplamHarcamaByKullanici_Id(@Param("kullanici_Id") Long kullaniciId);
     
     /**
      * En son siparişleri bulma
@@ -113,27 +114,16 @@ public interface SiparisRepository extends JpaRepository<Siparis, Long> {
     List<Siparis> findIptalEdilmisSiparisler();
     
     /**
-     * Günlük satış istatistikleri
-     */
-    @Query("SELECT CAST(s.siparisTarihi AS date), COUNT(s), SUM(s.toplamTutar) FROM Siparis s WHERE s.durum = 'Onaylandı' GROUP BY CAST(s.siparisTarihi AS date) ORDER BY CAST(s.siparisTarihi AS date) DESC")
-    List<Object[]> findGunlukSatisIstatistikleri();
-    
-    /**
      * Sayfalama ile durum bazlı siparişler
      */
+    @EntityGraph(attributePaths = {"kullanici", "siparisDetaylari", "siparisDetaylari.kitap"})
     Page<Siparis> findByDurum(String durum, Pageable pageable);
-    
-    /**
-     * Kullanıcının toplam harcaması
-     */
-    @Query("SELECT COALESCE(SUM(s.toplamTutar), 0) FROM Siparis s WHERE s.kullaniciId = :kullaniciId AND s.durum = 'Onaylandı'")
-    BigDecimal getTotalSpentByKullaniciId(@Param("kullaniciId") Long kullaniciId);
     
     /**
      * Günlük satış istatistikleri
      */
     @Query("SELECT CAST(s.siparisTarihi AS date) as tarih, COUNT(s) as adet, SUM(s.toplamTutar) as toplam FROM Siparis s WHERE s.durum = 'Onaylandı' GROUP BY CAST(s.siparisTarihi AS date) ORDER BY CAST(s.siparisTarihi AS date) DESC")
-    List<Object[]> getDailySalesStats();
+    List<Object[]> findGunlukSatisIstatistikleri();
     
     /**
      * Aylık satış istatistikleri
@@ -144,7 +134,7 @@ public interface SiparisRepository extends JpaRepository<Siparis, Long> {
     /**
      * En çok alışveriş yapan müşteriler
      */
-    @Query("SELECT s.kullaniciId, COUNT(s) as siparisAdet, SUM(s.toplamTutar) as toplamHarcama FROM Siparis s WHERE s.durum = 'Onaylandı' GROUP BY s.kullaniciId ORDER BY toplamHarcama DESC")
+    @Query("SELECT s.kullanici.id, COUNT(s) as siparisAdet, SUM(s.toplamTutar) as toplamHarcama FROM Siparis s WHERE s.durum = 'Onaylandı' GROUP BY s.kullanici.id ORDER BY toplamHarcama DESC")
     List<Object[]> getTopCustomers();
     
     /**
@@ -162,6 +152,12 @@ public interface SiparisRepository extends JpaRepository<Siparis, Long> {
     /**
      * Kullanıcı ID'ye göre siparişleri detaylarıyla birlikte getir
      */
-    @Query("SELECT s FROM Siparis s LEFT JOIN FETCH s.siparisDetaylari WHERE s.kullaniciId = :kullaniciId")
-    List<Siparis> findByKullaniciIdWithDetails(@Param("kullaniciId") Long kullaniciId);
+    @Query("SELECT s FROM Siparis s LEFT JOIN FETCH s.siparisDetaylari WHERE s.kullanici.id = :kullanici_Id")
+    List<Siparis> findByKullanici_IdWithDetails(@Param("kullanici_Id") Long kullaniciId);
+    
+    /**
+     * Son eklenen siparişleri getir (ID'ye göre azalan sırada)
+     */
+    @Query("SELECT s FROM Siparis s ORDER BY s.id DESC")
+    List<Siparis> findTopByOrderByIdDesc(@Param("limit") int limit);
 }

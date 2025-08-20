@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="${kullanici.id != null ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'}">Kullanıcı Form</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-user-edit"></i> 
+                <span th:text="${kullanici.id != null ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı'}">Kullanıcı Form</span>
+                <small class="text-muted" th:if="${kullanici.id != null}" th:text="'#' + ${kullanici.id}">#1</small>
+            </h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <a th:href="@{/admin/kullanicilar}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Error Messages -->
+        <div th:if="${#fields.hasErrors('*')}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <h6><i class="fas fa-exclamation-triangle"></i> Lütfen aşağıdaki hataları düzeltin:</h6>
+            <ul class="mb-0">
+                <li th:each="error : ${#fields.allErrors()}" th:text="${error}">Hata mesajı</li>
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <!-- Success Message -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> <span th:text="${successMessage}">Başarı mesajı</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-user-cog"></i> Kullanıcı Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{${kullanici.id != null ? '/admin/kullanicilar/' + kullanici.id : '/admin/kullanicilar'}}" 
+                              th:object="${kullanici}" method="post">
+                            
+                            <input type="hidden" th:if="${kullanici.id != null}" name="_method" value="put">
+                            <input type="hidden" th:field="*{id}">
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="adSoyad" class="form-label">Ad Soyad <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="adSoyad" th:field="*{adSoyad}" 
+                                           th:classappend="${#fields.hasErrors('adSoyad')} ? 'is-invalid'" 
+                                           placeholder="Kullanıcının ad ve soyadını girin" required>
+                                    <div th:if="${#fields.hasErrors('adSoyad')}" class="invalid-feedback" th:errors="*{adSoyad}"></div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="email" th:field="*{email}" 
+                                           th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" 
+                                           placeholder="email@example.com" required>
+                                    <div th:if="${#fields.hasErrors('email')}" class="invalid-feedback" th:errors="*{email}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="sifre" class="form-label">
+                                        Şifre 
+                                        <span th:if="${kullanici.id == null}" class="text-danger">*</span>
+                                        <span th:if="${kullanici.id != null}" class="text-muted">(Boş bırakılırsa değiştirilmez)</span>
+                                    </label>
+                                    <input type="password" class="form-control" id="sifre" th:field="*{sifre}" 
+                                           th:classappend="${#fields.hasErrors('sifre')} ? 'is-invalid'" 
+                                           placeholder="Güçlü bir şifre girin" 
+                                           th:required="${kullanici.id == null}">
+                                    <div th:if="${#fields.hasErrors('sifre')}" class="invalid-feedback" th:errors="*{sifre}"></div>
+                                    <div class="form-text">Şifre en az 6 karakter olmalıdır.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="telefon" class="form-label">Telefon</label>
+                                    <input type="tel" class="form-control" id="telefon" th:field="*{telefon}" 
+                                           th:classappend="${#fields.hasErrors('telefon')} ? 'is-invalid'" 
+                                           placeholder="0555 123 45 67">
+                                    <div th:if="${#fields.hasErrors('telefon')}" class="invalid-feedback" th:errors="*{telefon}"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="adres" class="form-label">Adres</label>
+                                <textarea class="form-control" id="adres" th:field="*{adres}" rows="3" 
+                                          th:classappend="${#fields.hasErrors('adres')} ? 'is-invalid'" 
+                                          placeholder="Kullanıcının adresini girin"></textarea>
+                                <div th:if="${#fields.hasErrors('adres')}" class="invalid-feedback" th:errors="*{adres}"></div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="aktif" th:field="*{aktif}">
+                                        <label class="form-check-label" for="aktif">
+                                            Kullanıcı Aktif
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Pasif kullanıcılar sisteme giriş yapamaz.</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3" th:if="${kullanici.id != null}">
+                                    <label class="form-label">Kayıt Tarihi</label>
+                                    <input type="text" class="form-control" readonly 
+                                           th:value="${#temporals.format(kullanici.kayitTarihi, 'dd/MM/yyyy HH:mm')}">
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-save"></i> 
+                                        <span th:text="${kullanici.id != null ? 'Güncelle' : 'Kaydet'}">Kaydet</span>
+                                    </button>
+                                    <a th:href="@{/admin/kullanicilar}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> İptal
+                                    </a>
+                                </div>
+                                
+                                <div th:if="${kullanici.id != null}">
+                                    <button type="button" class="btn btn-danger" 
+                                            th:onclick="'confirmDelete(' + ${kullanici.id} + ')'">
+                                        <i class="fas fa-trash"></i> Sil
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Info Panel -->
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-info">
+                            <i class="fas fa-info-circle"></i> Bilgilendirme
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6 class="text-primary">Şifre Gereksinimleri:</h6>
+                            <ul class="small text-muted">
+                                <li>En az 6 karakter</li>
+                                <li>Büyük ve küçük harf</li>
+                                <li>En az bir rakam</li>
+                                <li>Özel karakter önerilir</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 class="text-primary">Kullanıcı Durumu:</h6>
+                            <p class="small text-muted">
+                                Pasif kullanıcılar sisteme giriş yapamaz ancak mevcut siparişleri görüntülenebilir.
+                            </p>
+                        </div>
+                        
+                        <div th:if="${kullanici.id != null}">
+                            <h6 class="text-primary">İstatistikler:</h6>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h6 class="text-primary mb-0" th:text="${siparisCount ?: 0}">0</h6>
+                                        <small class="text-muted">Sipariş</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <h6 class="text-success mb-0" th:text="${favoriCount ?: 0}">0</h6>
+                                    <small class="text-muted">Favori</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card shadow" th:if="${kullanici.id != null}">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-bolt"></i> Hızlı İşlemler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/admin/kullanicilar/{id}(id=${kullanici.id})}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-eye"></i> Detayları Görüntüle
+                            </a>
+                            <a th:href="@{/admin/siparisler(kullaniciId=${kullanici.id})}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-shopping-cart"></i> Siparişlerini Görüntüle
+                            </a>
+                            <a th:href="@{/admin/favoriler(kullaniciId=${kullanici.id})}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-heart"></i> Favorilerini Görüntüle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Kullanıcı Sil
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bu kullanıcıyı silmek istediğinizden emin misiniz?</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Uyarı:</strong> Bu işlem geri alınamaz ve kullanıcının tüm siparişleri de silinecektir.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <form id="deleteForm" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="delete">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function confirmDelete(kullaniciId) {
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = '/admin/kullanicilar/' + kullaniciId;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+        
+        // Form validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const sifreInput = document.getElementById('sifre');
+            const isEdit = document.querySelector('input[name="_method"][value="put"]') !== null;
+            
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                // Şifre kontrolü (sadece yeni kullanıcı için zorunlu)
+                if (!isEdit && (!sifreInput.value || sifreInput.value.length < 6)) {
+                    isValid = false;
+                    sifreInput.classList.add('is-invalid');
+                } else {
+                    sifreInput.classList.remove('is-invalid');
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

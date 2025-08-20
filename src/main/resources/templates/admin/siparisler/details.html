@@ -233,7 +233,7 @@
                                             <tr th:each="detay : ${siparis.siparisDetaylari}">
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <img th:src="${detay.kitap.resimUrl ?: 'https://via.placeholder.com/50x70'}" 
+                                                        <img th:src="${detay.kitap.resimUrl ?: '/images/books/placeholder.jpg'}" 
                                                              class="me-3" width="50" height="70" alt="Kitap">
                                                         <div>
                                                             <h6 class="mb-1" th:text="${detay.kitap.ad}">Kitap Adı</h6>

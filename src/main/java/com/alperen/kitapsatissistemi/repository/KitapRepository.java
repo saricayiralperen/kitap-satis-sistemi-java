@@ -3,6 +3,7 @@ package com.alperen.kitapsatissistemi.repository;
 import com.alperen.kitapsatissistemi.entity.Kitap;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,7 +32,7 @@ public interface KitapRepository extends JpaRepository<Kitap, Long> {
     /**
      * Kategori ID'sine göre kitapları bulma
      */
-    List<Kitap> findByKategoriId(Long kategoriId);
+    List<Kitap> findByKategori_Id(Long kategoriId);
     
     /**
      * Fiyat aralığına göre kitapları bulma
@@ -49,7 +50,7 @@ public interface KitapRepository extends JpaRepository<Kitap, Long> {
     /**
      * Kategori ID'sine göre kitap sayısını bulma
      */
-    long countByKategoriId(Long kategoriId);
+    long countByKategori_Id(Long kategoriId);
     
     /**
      * En pahalı kitapları bulma
@@ -94,22 +95,38 @@ public interface KitapRepository extends JpaRepository<Kitap, Long> {
     // Thymeleaf template'ler için ek metodlar
     
     /**
-     * Ada göre arama (case insensitive) - sayfalama ile
+     * Sayfalama ile tüm kitapları kategori bilgileri ile birlikte getir
      */
+    @EntityGraph(attributePaths = {"kategori"})
+    @Override
+    Page<Kitap> findAll(Pageable pageable);
+    
+    /**
+     * Sayfalama ile kitap adına göre arama (kategori bilgileri ile)
+     */
+    @EntityGraph(attributePaths = {"kategori"})
     Page<Kitap> findByAdContainingIgnoreCase(String ad, Pageable pageable);
     
     /**
-     * Kategori ID'ye göre kitapları getir - sayfalama ile
+     * Sayfalama ile kategori ID'sine göre kitapları bulma (kategori bilgileri ile)
      */
-    Page<Kitap> findByKategoriId(Long kategoriId, Pageable pageable);
+    @EntityGraph(attributePaths = {"kategori"})
+    Page<Kitap> findByKategori_Id(Long kategoriId, Pageable pageable);
     
     /**
-     * Ad ve kategori ID'ye göre arama - sayfalama ile
+     * Sayfalama ile kitap adı ve kategori ID'sine göre arama (kategori bilgileri ile)
      */
-    Page<Kitap> findByAdContainingIgnoreCaseAndKategoriId(String ad, Long kategoriId, Pageable pageable);
+    @EntityGraph(attributePaths = {"kategori"})
+    Page<Kitap> findByAdContainingIgnoreCaseAndKategori_Id(String ad, Long kategoriId, Pageable pageable);
     
     /**
      * Kategori ID'ye göre kitapları getir (belirli ID hariç)
      */
-    List<Kitap> findByKategoriIdAndIdNot(Long kategoriId, Long excludeId);
+    List<Kitap> findByKategori_IdAndIdNot(Long kategoriId, Long excludeId);
+    
+    /**
+     * Son eklenen kitapları getir (ID'ye göre azalan sırada)
+     */
+    @Query("SELECT k FROM Kitap k ORDER BY k.id DESC")
+    List<Kitap> findTopByOrderByIdDesc(@Param("limit") int limit);
 }

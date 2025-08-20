@@ -27,7 +27,9 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand" href="/">📚 AlperenBooks</a>
+            <a class="navbar-brand" href="/" style="display: flex; align-items: center;">
+                <img th:src="@{/images/logo.svg}" alt="AlperenBooks" style="height: 35px; margin-right: 8px;">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -125,7 +127,7 @@
                 <tbody>
                     <tr th:each="item : ${sepetItems}">
                         <td class="align-middle" style="width: 100px;">
-                            <img th:src="${item.resimUrl != null ? item.resimUrl : 'https://via.placeholder.com/100x150'}" 
+                            <img th:src="${item.resimUrl != null ? item.resimUrl : '/images/books/placeholder.jpg'}" 
                                  th:alt="${item.kitapAd}" 
                                  class="img-fluid rounded" 
                                  style="max-height: 100px;">
@@ -297,7 +299,7 @@
                 var $img = $(this);
                 // Eğer zaten placeholder'a çevrilmişse, tekrar değiştirme
                 if (!$img.attr('src').includes('placeholder')) {
-                    $img.attr('src', 'https://via.placeholder.com/100x150?text=Resim+Bulunamadı');
+                    $img.attr('src', '/images/books/placeholder.jpg');
                     $img.off('error'); // Error event'ini kaldır, sonsuz döngüyü önle
                 }
             });
@@ -307,7 +309,7 @@
                 var $img = $(this);
                 var src = $img.attr('src');
                 if (!src || src === '' || src === 'null') {
-                    $img.attr('src', 'https://via.placeholder.com/100x150?text=Resim+Bulunamadı');
+                    $img.attr('src', '/images/books/placeholder.jpg');
                 }
             });
         });

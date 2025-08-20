@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Kitap Detayı</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-book"></i> Kitap Detayı
+                <small class="text-muted" th:text="'#' + ${kitap.id}">#1</small>
+            </h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <a th:href="@{/admin/kitaplar}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                    <a th:href="@{/admin/kitaplar/{id}/duzenle(id=${kitap.id})}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Book Information -->
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Kitap Bilgileri</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="avatar mx-auto mb-3" style="width: 120px; height: 160px;">
+                            <div class="avatar-initial bg-primary rounded d-flex align-items-center justify-content-center" style="width: 100%; height: 100%;">
+                                <i class="fas fa-book fa-3x text-white"></i>
+                            </div>
+                        </div>
+                        <h5 class="mb-1" th:text="${kitap.ad}">Kitap Adı</h5>
+                        <p class="text-muted mb-1" th:text="${kitap.yazar}">Yazar Adı</p>
+                        <p class="text-muted mb-3" th:if="${kitap.isbn}" th:text="'ISBN: ' + ${kitap.isbn}">ISBN: 123456789</p>
+                        
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <div class="border-end">
+                                    <h6 class="text-success mb-0" th:text="${kitap.fiyat} + ' ₺'">0 ₺</h6>
+                                    <small class="text-muted">Fiyat</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border-end">
+                                    <h6 class="mb-0" th:classappend="${kitap.stokMiktari > 10} ? 'text-success' : (${kitap.stokMiktari > 0} ? 'text-warning' : 'text-danger')" th:text="${kitap.stokMiktari}">0</h6>
+                                    <small class="text-muted">Stok</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="mb-0" th:classappend="${kitap.aktif} ? 'text-success' : 'text-danger'" th:text="${kitap.aktif ? 'Aktif' : 'Pasif'}">Aktif</h6>
+                                <small class="text-muted">Durum</small>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${kitap.kategori}" class="mb-3">
+                            <span class="badge bg-info" th:text="${kitap.kategori.ad}">Kategori</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Book Statistics -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">İstatistikler</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <i class="fas fa-calendar text-primary"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Oluşturma Tarihi:</strong><br>
+                                <span th:text="${#temporals.format(kitap.olusturmaTarihi, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3" th:if="${kitap.guncellemeTarihi != null}">
+                            <div class="col-4">
+                                <i class="fas fa-edit text-warning"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Son Güncelleme:</strong><br>
+                                <span th:text="${#temporals.format(kitap.guncellemeTarihi, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3" th:if="${kitap.yayinTarihi != null}">
+                            <div class="col-4">
+                                <i class="fas fa-calendar-alt text-info"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Yayın Tarihi:</strong><br>
+                                <span th:text="${#temporals.format(kitap.yayinTarihi, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3" th:if="${kitap.sayfaSayisi != null}">
+                            <div class="col-4">
+                                <i class="fas fa-file-alt text-secondary"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Sayfa Sayısı:</strong><br>
+                                <span th:text="${kitap.sayfaSayisi}">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-4">
+                                <i class="fas fa-shopping-cart text-success"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Toplam Satış:</strong><br>
+                                <span th:text="${toplamSatisSayisi ?: 0}">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Book Details -->
+            <div class="col-lg-8">
+                <!-- Description -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Kitap Açıklaması</h6>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${kitap.aciklama != null and !kitap.aciklama.isEmpty()}">
+                            <p th:text="${kitap.aciklama}" class="mb-0">Kitap açıklaması burada görünecek...</p>
+                        </div>
+                        <div th:unless="${kitap.aciklama != null and !kitap.aciklama.isEmpty()}" class="text-center text-muted py-3">
+                            <i class="fas fa-info-circle fa-2x mb-2 d-block"></i>
+                            <p class="mb-0">Bu kitap için henüz açıklama eklenmemiş.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Additional Information -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Ek Bilgiler</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <table class="table table-borderless table-sm">
+                                    <tr th:if="${kitap.yayinevi != null}">
+                                        <td><strong>Yayınevi:</strong></td>
+                                        <td th:text="${kitap.yayinevi}">Yayınevi Adı</td>
+                                    </tr>
+                                    <tr th:if="${kitap.dil != null}">
+                                        <td><strong>Dil:</strong></td>
+                                        <td th:text="${kitap.dil}">Türkçe</td>
+                                    </tr>
+                                    <tr th:if="${kitap.kapakTipi != null}">
+                                        <td><strong>Kapak Tipi:</strong></td>
+                                        <td th:text="${kitap.kapakTipi}">Karton Kapak</td>
+                                    </tr>
+                                    <tr th:if="${kitap.boyutlar != null}">
+                                        <td><strong>Boyutlar:</strong></td>
+                                        <td th:text="${kitap.boyutlar}">13.5x21 cm</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <table class="table table-borderless table-sm">
+                                    <tr th:if="${kitap.agirlik != null}">
+                                        <td><strong>Ağırlık:</strong></td>
+                                        <td th:text="${kitap.agirlik} + ' gr'">0 gr</td>
+                                    </tr>
+                                    <tr th:if="${kitap.barkod != null}">
+                                        <td><strong>Barkod:</strong></td>
+                                        <td th:text="${kitap.barkod}">123456789012</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Kategori:</strong></td>
+                                        <td>
+                                            <span th:if="${kitap.kategori}" class="badge bg-info" th:text="${kitap.kategori.ad}">Kategori</span>
+                                            <span th:unless="${kitap.kategori}" class="badge bg-secondary">Kategorisiz</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Stok Durumu:</strong></td>
+                                        <td>
+                                            <span th:if="${kitap.stokMiktari > 10}" class="badge bg-success">Stokta Var</span>
+                                            <span th:if="${kitap.stokMiktari <= 10 and kitap.stokMiktari > 0}" class="badge bg-warning">Düşük Stok</span>
+                                            <span th:if="${kitap.stokMiktari <= 0}" class="badge bg-danger">Tükendi</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Orders -->
+                <div class="card shadow mb-4" th:if="${sonSiparisler != null and !sonSiparisler.isEmpty()}">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Son Siparişler</h6>
+                        <a th:href="@{/admin/siparisler(kitapId=${kitap.id})}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-list"></i> Tümünü Gör
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sipariş</th>
+                                        <th>Müşteri</th>
+                                        <th>Adet</th>
+                                        <th>Tutar</th>
+                                        <th>Tarih</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="siparis : ${sonSiparisler}">
+                                        <td>
+                                            <a th:href="@{/admin/siparisler/{id}(id=${siparis.id})}" 
+                                               class="text-decoration-none" 
+                                               th:text="'#' + ${siparis.id}">#1</a>
+                                        </td>
+                                        <td th:text="${siparis.kullanici.ad + ' ' + siparis.kullanici.soyad}">Müşteri Adı</td>
+                                        <td th:text="${siparis.adet}">1</td>
+                                        <td th:text="${siparis.toplamTutar} + ' ₺'">0 ₺</td>
+                                        <td th:text="${#temporals.format(siparis.olusturmaTarihi, 'dd/MM/yyyy')}">01/01/2024</td>
+                                        <td>
+                                            <span class="badge" 
+                                                  th:classappend="${siparis.durum == 'TAMAMLANDI'} ? 'bg-success' : (${siparis.durum == 'IPTAL'} ? 'bg-danger' : 'bg-warning')"
+                                                  th:text="${siparis.durum}">BEKLEMEDE</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-bolt"></i> Hızlı İşlemler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <a th:href="@{/admin/kitaplar/{id}/duzenle(id=${kitap.id})}" class="btn btn-warning btn-block">
+                                    <i class="fas fa-edit"></i> Düzenle
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a th:href="@{/admin/kitaplar/yeni(kategoriId=${kitap.kategori?.id})}" class="btn btn-success btn-block">
+                                    <i class="fas fa-plus"></i> Benzer Ekle
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <a th:href="@{/admin/siparisler(kitapId=${kitap.id})}" class="btn btn-info btn-block">
+                                    <i class="fas fa-shopping-cart"></i> Siparişler
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <button type="button" class="btn btn-danger btn-block" 
+                                        th:onclick="'confirmDelete(' + ${kitap.id} + ', \'' + ${kitap.ad} + '\', ' + ${toplamSatisSayisi ?: 0} + ')'">
+                                    <i class="fas fa-trash"></i> Sil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Kitap Sil
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong id="deleteKitapAd"></strong> kitabını silmek istediğinizden emin misiniz?</p>
+                        <div id="deleteWarning" class="alert alert-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Uyarı:</strong> Bu kitap için <span id="satissayisi"></span> sipariş bulunmaktadır. 
+                            Kitap silindiğinde bu siparişler etkilenebilir.
+                        </div>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Dikkat:</strong> Bu işlem geri alınamaz.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <form id="deleteForm" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="delete">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function confirmDelete(kitapId, kitapAd, satisSayisi) {
+            const deleteForm = document.getElementById('deleteForm');
+            const deleteKitapAd = document.getElementById('deleteKitapAd');
+            const deleteWarning = document.getElementById('deleteWarning');
+            const satisSayisiSpan = document.getElementById('satisayisi');
+            
+            deleteForm.action = '/admin/kitaplar/' + kitapId;
+            deleteKitapAd.textContent = kitapAd;
+            
+            if (satisSayisi > 0) {
+                satisSayisiSpan.textContent = satisSayisi;
+                deleteWarning.style.display = 'block';
+            } else {
+                deleteWarning.style.display = 'none';
+            }
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+</body>
+</html>

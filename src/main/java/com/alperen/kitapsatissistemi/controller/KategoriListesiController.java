@@ -1,6 +1,7 @@
 package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Kategori;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
 import com.alperen.kitapsatissistemi.service.KategoriService;
 import com.alperen.kitapsatissistemi.service.KitapService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,8 @@ public class KategoriListesiController {
     public String kategoriListesi(Model model, HttpSession session) {
         try {
             // Kullanıcı oturum bilgilerini kontrol et
-            Long kullaniciId = (Long) session.getAttribute("kullaniciId");
-            String kullaniciAdi = (String) session.getAttribute("kullaniciAdi");
+            Long kullaniciId = (Long) session.getAttribute("KullaniciId");
+            String kullaniciAdi = (String) session.getAttribute("KullaniciAd");
             
             if (kullaniciId != null && kullaniciAdi != null) {
                 model.addAttribute("isLoggedIn", true);
@@ -60,6 +61,9 @@ public class KategoriListesiController {
             
             return "kategoriler/index";
             
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "error/500";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kategoriler yüklenirken bir hata oluştu: " + e.getMessage());
             return "error/500";

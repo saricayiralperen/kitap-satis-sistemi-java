@@ -1,6 +1,8 @@
 package com.alperen.kitapsatissistemi.service;
 
 import com.alperen.kitapsatissistemi.entity.SiparisDetay;
+import com.alperen.kitapsatissistemi.entity.Siparis;
+import com.alperen.kitapsatissistemi.entity.Kitap;
 import com.alperen.kitapsatissistemi.repository.SiparisDetayRepository;
 import com.alperen.kitapsatissistemi.repository.SiparisRepository;
 import com.alperen.kitapsatissistemi.repository.KitapRepository;
@@ -61,7 +63,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public List<SiparisDetay> getSiparisDetaylarBySiparisId(Long siparisId) {
-        return siparisDetayRepository.findBySiparisId(siparisId);
+        return siparisDetayRepository.findBySiparis_Id(siparisId);
     }
     
     /**
@@ -69,7 +71,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public List<SiparisDetay> getSiparisDetaylarBySiparisIdWithKitap(Long siparisId) {
-        return siparisDetayRepository.findBySiparisIdWithKitap(siparisId);
+        return siparisDetayRepository.findBySiparis_IdWithKitap(siparisId);
     }
     
     /**
@@ -77,7 +79,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public List<SiparisDetay> getSiparisDetaylarByKitapId(Long kitapId) {
-        return siparisDetayRepository.findByKitapId(kitapId);
+        return siparisDetayRepository.findByKitap_Id(kitapId);
     }
     
     /**
@@ -85,7 +87,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public List<SiparisDetay> getSiparisDetaylarByKitapIdWithSiparis(Long kitapId) {
-        return siparisDetayRepository.findByKitapIdWithSiparis(kitapId);
+        return siparisDetayRepository.findByKitap_IdWithSiparis(kitapId);
     }
     
     /**
@@ -93,7 +95,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public Optional<SiparisDetay> getSiparisDetayBySiparisIdAndKitapId(Long siparisId, Long kitapId) {
-        return siparisDetayRepository.findBySiparisIdAndKitapId(siparisId, kitapId);
+        return siparisDetayRepository.findBySiparis_IdAndKitap_Id(siparisId, kitapId);
     }
     
     /**
@@ -101,14 +103,12 @@ public class SiparisDetayService {
      */
     public SiparisDetay createSiparisDetay(SiparisDetay siparisDetay) {
         // Sipariş var mı kontrol et
-        if (!siparisRepository.existsById(siparisDetay.getSiparisId())) {
-            throw new RuntimeException("Sipariş bulunamadı, ID: " + siparisDetay.getSiparisId());
-        }
+        Siparis siparis = siparisRepository.findById(siparisDetay.getSiparisId())
+            .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı, ID: " + siparisDetay.getSiparisId()));
         
         // Kitap var mı kontrol et
-        if (!kitapRepository.existsById(siparisDetay.getKitapId())) {
-            throw new RuntimeException("Kitap bulunamadı, ID: " + siparisDetay.getKitapId());
-        }
+        Kitap kitap = kitapRepository.findById(siparisDetay.getKitapId())
+            .orElseThrow(() -> new RuntimeException("Kitap bulunamadı, ID: " + siparisDetay.getKitapId()));
         
         // Adet pozitif mi kontrol et
         if (siparisDetay.getAdet() <= 0) {
@@ -120,6 +120,10 @@ public class SiparisDetayService {
             throw new RuntimeException("Fiyat 0'dan büyük olmalıdır");
         }
         
+        // Navigation property'leri ayarla
+        siparisDetay.setSiparis(siparis);
+        siparisDetay.setKitap(kitap);
+        
         return siparisDetayRepository.save(siparisDetay);
     }
     
@@ -129,10 +133,9 @@ public class SiparisDetayService {
     public SiparisDetay updateSiparisDetay(Long id, SiparisDetay siparisDetayDetaylari) {
         return siparisDetayRepository.findById(id)
                 .map(siparisDetay -> {
-                    // Kitap var mı kontrol et
-                    if (!kitapRepository.existsById(siparisDetayDetaylari.getKitapId())) {
-                        throw new RuntimeException("Kitap bulunamadı, ID: " + siparisDetayDetaylari.getKitapId());
-                    }
+                    // Kitap var mı kontrol et ve kitap nesnesini al
+                    Kitap kitap = kitapRepository.findById(siparisDetayDetaylari.getKitapId())
+                        .orElseThrow(() -> new RuntimeException("Kitap bulunamadı, ID: " + siparisDetayDetaylari.getKitapId()));
                     
                     // Adet pozitif mi kontrol et
                     if (siparisDetayDetaylari.getAdet() <= 0) {
@@ -144,7 +147,7 @@ public class SiparisDetayService {
                         throw new RuntimeException("Fiyat 0'dan büyük olmalıdır");
                     }
                     
-                    siparisDetay.setKitapId(siparisDetayDetaylari.getKitapId());
+                    siparisDetay.setKitap(kitap);
                     siparisDetay.setAdet(siparisDetayDetaylari.getAdet());
                     siparisDetay.setFiyat(siparisDetayDetaylari.getFiyat());
                     
@@ -168,7 +171,7 @@ public class SiparisDetayService {
      * Siparişin tüm detaylarını sil
      */
     public void deleteAllSiparisDetaylarBySiparisId(Long siparisId) {
-        List<SiparisDetay> detaylar = siparisDetayRepository.findBySiparisId(siparisId);
+        List<SiparisDetay> detaylar = siparisDetayRepository.findBySiparis_Id(siparisId);
         siparisDetayRepository.deleteAll(detaylar);
     }
     
@@ -185,7 +188,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public Integer getTotalSalesQuantityByKitapId(Long kitapId) {
-        Integer total = siparisDetayRepository.getTotalSalesQuantityByKitapId(kitapId);
+        Integer total = siparisDetayRepository.getTotalSalesQuantityByKitap_Id(kitapId);
         return total != null ? total : 0;
     }
     
@@ -194,7 +197,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getTotalSalesAmountByKitapId(Long kitapId) {
-        return siparisDetayRepository.findToplamSatisTutariByKitapId(kitapId);
+        return siparisDetayRepository.findToplamSatisTutariByKitap_Id(kitapId);
     }
     
     /**
@@ -218,7 +221,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public BigDecimal calculateTotalOrderAmount(Long siparisId) {
-        return siparisDetayRepository.calculateToplamTutarBySiparisId(siparisId);
+        return siparisDetayRepository.calculateToplamTutarBySiparis_Id(siparisId);
     }
     
     /**
@@ -242,7 +245,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public long getSiparisDetayCountBySiparisId(Long siparisId) {
-        return siparisDetayRepository.countBySiparisId(siparisId);
+        return siparisDetayRepository.countBySiparis_Id(siparisId);
     }
     
     /**
@@ -250,7 +253,7 @@ public class SiparisDetayService {
      */
     @Transactional(readOnly = true)
     public long getSiparisDetayCountByKitapId(Long kitapId) {
-        return siparisDetayRepository.countByKitapId(kitapId);
+        return siparisDetayRepository.countByKitap_Id(kitapId);
     }
     
     /**

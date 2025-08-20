@@ -1,12 +1,17 @@
 package com.alperen.kitapsatissistemi.service;
 
 import com.alperen.kitapsatissistemi.entity.Kategori;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.DuplicateEntityException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.repository.KategoriRepository;
+import com.alperen.kitapsatissistemi.repository.KitapRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,10 +24,12 @@ import java.util.Optional;
 public class KategoriService {
     
     private final KategoriRepository kategoriRepository;
+    private final KitapRepository kitapRepository;
     
     @Autowired
-    public KategoriService(KategoriRepository kategoriRepository) {
+    public KategoriService(KategoriRepository kategoriRepository, KitapRepository kitapRepository) {
         this.kategoriRepository = kategoriRepository;
+        this.kitapRepository = kitapRepository;
     }
     
     /**
@@ -61,9 +68,21 @@ public class KategoriService {
      * Yeni kategori oluştur
      */
     public Kategori createKategori(Kategori kategori) {
+        // Input validation
+        if (kategori == null) {
+            throw new BusinessException("Kategori bilgisi boş olamaz");
+        }
+        
+        if (!StringUtils.hasText(kategori.getAd())) {
+            throw new BusinessException("Kategori adı boş olamaz");
+        }
+        
+        // Kategori adını temizle
+        kategori.setAd(kategori.getAd().trim());
+        
         // Kategori adının benzersiz olup olmadığını kontrol et
         if (kategoriRepository.existsByAd(kategori.getAd())) {
-            throw new RuntimeException("Bu kategori adı zaten mevcut: " + kategori.getAd());
+            throw new DuplicateEntityException("Kategori", "ad", kategori.getAd());
         }
         
         return kategoriRepository.save(kategori);
@@ -73,30 +92,55 @@ public class KategoriService {
      * Kategori güncelle
      */
     public Kategori updateKategori(Long id, Kategori kategoriDetaylari) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kategori ID'si boş olamaz");
+        }
+        
+        if (kategoriDetaylari == null) {
+            throw new BusinessException("Kategori bilgisi boş olamaz");
+        }
+        
+        if (!StringUtils.hasText(kategoriDetaylari.getAd())) {
+            throw new BusinessException("Kategori adı boş olamaz");
+        }
+        
+        // Kategori adını temizle
+        kategoriDetaylari.setAd(kategoriDetaylari.getAd().trim());
+        
         return kategoriRepository.findById(id)
                 .map(kategori -> {
                     // Kategori adının benzersiz olup olmadığını kontrol et (kendi ID'si hariç)
                     if (kategoriRepository.existsByAdAndIdNot(kategoriDetaylari.getAd(), id)) {
-                        throw new RuntimeException("Bu kategori adı zaten mevcut: " + kategoriDetaylari.getAd());
+                        throw new DuplicateEntityException("Kategori", "ad", kategoriDetaylari.getAd());
                     }
                     
                     kategori.setAd(kategoriDetaylari.getAd());
                     kategori.setAciklama(kategoriDetaylari.getAciklama());
                     return kategoriRepository.save(kategori);
                 })
-                .orElseThrow(() -> new RuntimeException("Kategori bulunamadı, ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Kategori", id));
     }
     
     /**
      * Kategori sil
      */
     public void deleteKategori(Long id) {
-        if (!kategoriRepository.existsById(id)) {
-            throw new RuntimeException("Kategori bulunamadı, ID: " + id);
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kategori ID'si boş olamaz");
         }
         
-        // TODO: Bu kategoriye ait kitaplar varsa silme işlemini engelle
-        // KitapService ile kontrol edilebilir
+        // Kategori var mı kontrol et
+        Kategori kategori = kategoriRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Kategori", id));
+        
+        // Bu kategoriye ait kitaplar varsa silme işlemini engelle
+        // Kitap sayısını repository üzerinden kontrol et
+        long kitapSayisi = kitapRepository.countByKategori_Id(kategori.getId());
+        if (kitapSayisi > 0) {
+            throw new BusinessException("Bu kategoriye ait kitaplar bulunduğu için silinemez. Önce kitapları başka kategoriye taşıyın.");
+        }
         
         kategoriRepository.deleteById(id);
     }

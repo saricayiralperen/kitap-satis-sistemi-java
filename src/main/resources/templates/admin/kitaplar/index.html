@@ -350,7 +350,7 @@
                                     <tr th:each="kitap : ${kitaplar}" th:if="${kitaplar != null and !kitaplar.isEmpty()}">
                                         <td th:text="${kitap.id}">1</td>
                                         <td>
-                                            <img th:src="${kitap.resimUrl ?: 'https://via.placeholder.com/50x70?text=Kitap'}" 
+                                            <img th:src="${kitap.resimUrl ?: '/images/books/placeholder.jpg'}" 
                                                  class="book-image" alt="Kitap Resmi">
                                         </td>
                                         <td>

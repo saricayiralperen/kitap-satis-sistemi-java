@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Kullanıcı Detayı</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-user"></i> Kullanıcı Detayı
+                <small class="text-muted" th:text="'#' + ${kullanici.id}">#1</small>
+            </h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <a th:href="@{/admin/kullanicilar}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                    <a th:href="@{/admin/kullanicilar/{id}/duzenle(id=${kullanici.id})}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- User Information -->
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Kullanıcı Bilgileri</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="avatar mx-auto mb-3" style="width: 80px; height: 80px;">
+                            <div class="avatar-initial bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 100%; height: 100%;">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <h5 class="mb-1" th:text="${kullanici.adSoyad}">Kullanıcı Adı</h5>
+                        <p class="text-muted mb-3" th:text="${kullanici.email}">email@example.com</p>
+                        <div class="mb-3">
+                            <span th:if="${kullanici.aktif}" class="badge bg-success fs-6">Aktif</span>
+                            <span th:unless="${kullanici.aktif}" class="badge bg-danger fs-6">Pasif</span>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h6 class="text-primary mb-0" th:text="${siparisCount}">0</h6>
+                                    <small class="text-muted">Sipariş</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h6 class="text-success mb-0" th:text="${favoriCount}">0</h6>
+                                <small class="text-muted">Favori</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">İletişim Bilgileri</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <i class="fas fa-envelope text-primary"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Email:</strong><br>
+                                <span th:text="${kullanici.email}">email@example.com</span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <i class="fas fa-phone text-primary"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Telefon:</strong><br>
+                                <span th:text="${kullanici.telefon ?: 'Belirtilmemiş'}">Belirtilmemiş</span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Adres:</strong><br>
+                                <span th:text="${kullanici.adres ?: 'Belirtilmemiş'}">Belirtilmemiş</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4">
+                                <i class="fas fa-calendar text-primary"></i>
+                            </div>
+                            <div class="col-8">
+                                <strong>Kayıt Tarihi:</strong><br>
+                                <span th:text="${#temporals.format(kullanici.kayitTarihi, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Orders and Favorites -->
+            <div class="col-lg-8">
+                <!-- Recent Orders -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Son Siparişler</h6>
+                        <a th:href="@{/admin/siparisler(kullaniciId=${kullanici.id})}" class="btn btn-sm btn-primary">Tümünü Gör</a>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${siparisler != null and !siparisler.isEmpty()}">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Sipariş No</th>
+                                            <th>Tarih</th>
+                                            <th>Tutar</th>
+                                            <th>Durum</th>
+                                            <th>İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="siparis : ${siparisler}">
+                                            <td th:text="'#' + ${siparis.id}">#1</td>
+                                            <td th:text="${#temporals.format(siparis.siparisTarihi, 'dd/MM/yyyy')}">01/01/2024</td>
+                                            <td th:text="${siparis.toplamTutar} + ' ₺'">0 ₺</td>
+                                            <td>
+                                                <span class="badge bg-success" th:text="${siparis.durum}">Tamamlandı</span>
+                                            </td>
+                                            <td>
+                                                <a th:href="@{/admin/siparisler/{id}(id=${siparis.id})}" class="btn btn-sm btn-outline-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div th:if="${siparisler == null or siparisler.isEmpty()}" class="text-center text-muted py-4">
+                            <i class="fas fa-shopping-cart fa-3x mb-3 d-block"></i>
+                            Henüz sipariş bulunmuyor.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Favorite Books -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Favori Kitaplar</h6>
+                        <a th:href="@{/admin/favoriler(kullaniciId=${kullanici.id})}" class="btn btn-sm btn-primary">Tümünü Gör</a>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${favoriler != null and !favoriler.isEmpty()}">
+                            <div class="row">
+                                <div th:each="favori : ${favoriler}" class="col-md-6 mb-3">
+                                    <div class="card border-left-success">
+                                        <div class="card-body py-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar me-3">
+                                                    <div class="avatar-initial bg-success rounded-circle">
+                                                        <i class="fas fa-book"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-0" th:text="${favori.kitap.ad}">Kitap Adı</h6>
+                                                    <small class="text-muted" th:text="${favori.kitap.yazar}">Yazar Adı</small>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-success font-weight-bold" th:text="${favori.kitap.fiyat} + ' ₺'">0 ₺</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${favoriler == null or favoriler.isEmpty()}" class="text-center text-muted py-4">
+                            <i class="fas fa-heart fa-3x mb-3 d-block"></i>
+                            Henüz favori kitap bulunmuyor.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

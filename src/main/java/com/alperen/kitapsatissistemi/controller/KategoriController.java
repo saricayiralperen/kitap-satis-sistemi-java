@@ -2,6 +2,9 @@ package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Kategori;
 import com.alperen.kitapsatissistemi.service.KategoriService;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
+import com.alperen.kitapsatissistemi.exception.DuplicateEntityException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,12 +37,14 @@ public class KategoriController {
      * Tüm kategorileri getir
      * GET /api/kategoriler
      */
-    @GetMapping("/api")
+    @GetMapping
     @ResponseBody
     public ResponseEntity<List<Kategori>> getAllKategoriler() {
         try {
             List<Kategori> kategoriler = kategoriService.getAllKategoriler();
             return ResponseEntity.ok(kategoriler);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -49,13 +54,15 @@ public class KategoriController {
      * ID'ye göre kategori getir
      * GET /api/kategoriler/{id}
      */
-    @GetMapping("/api/{id}")
+    @GetMapping("/{id}")
     @ResponseBody
     public ResponseEntity<Kategori> getKategoriById(@PathVariable Long id) {
         try {
             Optional<Kategori> kategori = kategoriService.getKategoriById(id);
             return kategori.map(ResponseEntity::ok)
                           .orElse(ResponseEntity.notFound().build());
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -65,12 +72,14 @@ public class KategoriController {
      * Kategori adına göre arama
      * GET /api/kategoriler/search?ad={ad}
      */
-    @GetMapping("/api/search")
+    @GetMapping("/search")
     @ResponseBody
     public ResponseEntity<List<Kategori>> searchKategoriler(@RequestParam String ad) {
         try {
             List<Kategori> kategoriler = kategoriService.searchKategorilerByAd(ad);
             return ResponseEntity.ok(kategoriler);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -80,12 +89,14 @@ public class KategoriController {
      * Açıklaması olan kategorileri getir
      * GET /api/kategoriler/with-aciklama
      */
-    @GetMapping("/api/with-aciklama")
+    @GetMapping("/with-aciklama")
     @ResponseBody
     public ResponseEntity<List<Kategori>> getKategorilerWithAciklama() {
         try {
             List<Kategori> kategoriler = kategoriService.getKategorilerWithAciklama();
             return ResponseEntity.ok(kategoriler);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -95,7 +106,7 @@ public class KategoriController {
      * Yeni kategori oluştur
      * POST /api/kategoriler
      */
-    @PostMapping("/api")
+    @PostMapping
     @ResponseBody
     public ResponseEntity<?> createKategori(@Valid @RequestBody Kategori kategori) {
         try {
@@ -113,7 +124,7 @@ public class KategoriController {
      * Kategori güncelle
      * PUT /api/kategoriler/{id}
      */
-    @PutMapping("/api/{id}")
+    @PutMapping("/{id}")
     @ResponseBody
     public ResponseEntity<?> updateKategori(@PathVariable Long id, 
                                            @Valid @RequestBody Kategori kategoriDetaylari) {
@@ -132,7 +143,7 @@ public class KategoriController {
      * Kategori sil
      * DELETE /api/kategoriler/{id}
      */
-    @DeleteMapping("/api/{id}")
+    @DeleteMapping("/{id}")
     @ResponseBody
     public ResponseEntity<?> deleteKategori(@PathVariable Long id) {
         try {
@@ -150,12 +161,14 @@ public class KategoriController {
      * Kategori var mı kontrol et
      * GET /api/kategoriler/{id}/exists
      */
-    @GetMapping("/api/{id}/exists")
+    @GetMapping("/{id}/exists")
     @ResponseBody
     public ResponseEntity<Boolean> checkKategoriExists(@PathVariable Long id) {
         try {
             boolean exists = kategoriService.existsById(id);
             return ResponseEntity.ok(exists);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -165,12 +178,14 @@ public class KategoriController {
      * Kategori adı var mı kontrol et
      * GET /api/kategoriler/check-name?ad={ad}
      */
-    @GetMapping("/api/check-name")
+    @GetMapping("/check-name")
     @ResponseBody
     public ResponseEntity<Boolean> checkKategoriAdExists(@RequestParam String ad) {
         try {
             boolean exists = kategoriService.existsByAd(ad);
             return ResponseEntity.ok(exists);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -180,14 +195,17 @@ public class KategoriController {
      * Toplam kategori sayısını getir
      * GET /api/kategoriler/count
      */
-    @GetMapping("/api/count")
+    @GetMapping("/count")
     @ResponseBody
     public ResponseEntity<Long> getKategoriCount() {
         try {
             long count = kategoriService.getKategoriCount();
             return ResponseEntity.ok(count);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }
+

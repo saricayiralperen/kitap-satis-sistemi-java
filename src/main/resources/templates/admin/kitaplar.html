@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Kitap Yönetimi</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-book"></i> Kitap Yönetimi
+                <small class="text-muted" th:text="'(' + ${kitaplar.totalElements} + ' kitap)'">0 kitap</small>
+            </h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <a href="/admin/kitaplar/yeni" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Yeni Kitap
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-download"></i> Dışa Aktar
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/admin/kitaplar/export/excel"><i class="fas fa-file-excel"></i> Excel</a></li>
+                        <li><a class="dropdown-item" href="/admin/kitaplar/export/pdf"><i class="fas fa-file-pdf"></i> PDF</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Toplam Kitap</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${kitaplar.totalElements}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-book fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Stokta Var</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${stokVarSayisi ?: 0}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Düşük Stok</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${dusukStokSayisi ?: 0}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-danger shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Tükenen</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${tukenenSayisi ?: 0}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-search"></i> Arama ve Filtreleme
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="get" th:action="@{/admin/kitaplar}">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="search" class="form-label">Kitap Ara</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   th:value="${param.search}" placeholder="Kitap adı, yazar, ISBN...">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="kategoriId" class="form-label">Kategori</label>
+                            <select class="form-select" id="kategoriId" name="kategoriId">
+                                <option value="">Tüm Kategoriler</option>
+                                <option th:each="kategori : ${kategoriler}" 
+                                        th:value="${kategori.id}" 
+                                        th:text="${kategori.ad}"
+                                        th:selected="${param.kategoriId != null and param.kategoriId[0] == kategori.id.toString()}">Kategori</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="stokDurumu" class="form-label">Stok Durumu</label>
+                            <select class="form-select" id="stokDurumu" name="stokDurumu">
+                                <option value="">Tümü</option>
+                                <option value="var" th:selected="${param.stokDurumu != null and param.stokDurumu[0] == 'var'}">Stokta Var</option>
+                                <option value="dusuk" th:selected="${param.stokDurumu != null and param.stokDurumu[0] == 'dusuk'}">Düşük Stok</option>
+                                <option value="tukendi" th:selected="${param.stokDurumu != null and param.stokDurumu[0] == 'tukendi'}">Tükendi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="minFiyat" class="form-label">Min Fiyat</label>
+                            <input type="number" class="form-control" id="minFiyat" name="minFiyat" 
+                                   th:value="${param.minFiyat}" placeholder="0" step="0.01">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="maxFiyat" class="form-label">Max Fiyat</label>
+                            <input type="number" class="form-control" id="maxFiyat" name="maxFiyat" 
+                                   th:value="${param.maxFiyat}" placeholder="1000" step="0.01">
+                        </div>
+                        <div class="col-md-1 mb-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2 mb-3">
+                            <label for="sortBy" class="form-label">Sırala</label>
+                            <select class="form-select" id="sortBy" name="sortBy">
+                                <option value="id" th:selected="${param.sortBy == null or param.sortBy[0] == 'id'}">ID</option>
+                                <option value="ad" th:selected="${param.sortBy != null and param.sortBy[0] == 'ad'}">Ad</option>
+                                <option value="yazar" th:selected="${param.sortBy != null and param.sortBy[0] == 'yazar'}">Yazar</option>
+                                <option value="fiyat" th:selected="${param.sortBy != null and param.sortBy[0] == 'fiyat'}">Fiyat</option>
+                                <option value="stokMiktari" th:selected="${param.sortBy != null and param.sortBy[0] == 'stokMiktari'}">Stok</option>
+                                <option value="olusturmaTarihi" th:selected="${param.sortBy != null and param.sortBy[0] == 'olusturmaTarihi'}">Tarih</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="sortDir" class="form-label">Yön</label>
+                            <select class="form-select" id="sortDir" name="sortDir">
+                                <option value="desc" th:selected="${param.sortDir == null or param.sortDir[0] == 'desc'}">Azalan</option>
+                                <option value="asc" th:selected="${param.sortDir != null and param.sortDir[0] == 'asc'}">Artan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label for="size" class="form-label">Sayfa Boyutu</label>
+                            <select class="form-select" id="size" name="size">
+                                <option value="10" th:selected="${kitaplar.size == 10}">10</option>
+                                <option value="25" th:selected="${kitaplar.size == 25}">25</option>
+                                <option value="50" th:selected="${kitaplar.size == 50}">50</option>
+                                <option value="100" th:selected="${kitaplar.size == 100}">100</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-end">
+                            <a href="/admin/kitaplar" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Temizle
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Books Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="fas fa-list"></i> Kitap Listesi
+                </h6>
+            </div>
+            <div class="card-body">
+                <div th:if="${kitaplar.content != null and !kitaplar.content.isEmpty()}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kitap</th>
+                                    <th>Kategori</th>
+                                    <th>Fiyat</th>
+                                    <th>Stok</th>
+                                    <th>Durum</th>
+                                    <th>Tarih</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="kitap : ${kitaplar.content}">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar me-3">
+                                                <div class="avatar-initial bg-primary rounded-circle">
+                                                    <i class="fas fa-book"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0" th:text="${kitap.ad}">Kitap Adı</h6>
+                                                <small class="text-muted">
+                                                    <span th:text="${kitap.yazar}">Yazar</span>
+                                                    <span th:if="${kitap.isbn}" th:text="' • ' + ${kitap.isbn}"> • ISBN</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${kitap.kategori}" class="badge bg-info" th:text="${kitap.kategori.ad}">Kategori</span>
+                                        <span th:unless="${kitap.kategori}" class="badge bg-secondary">Kategorisiz</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-success font-weight-bold" th:text="${kitap.fiyat} + ' ₺'">0 ₺</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${kitap.stokMiktari > 10}" class="badge bg-success" th:text="${kitap.stokMiktari}">10</span>
+                                        <span th:if="${kitap.stokMiktari <= 10 and kitap.stokMiktari > 0}" class="badge bg-warning" th:text="${kitap.stokMiktari}">5</span>
+                                        <span th:if="${kitap.stokMiktari <= 0}" class="badge bg-danger">Tükendi</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${kitap.aktif}" class="badge bg-success">Aktif</span>
+                                        <span th:unless="${kitap.aktif}" class="badge bg-secondary">Pasif</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted" th:text="${#temporals.format(kitap.olusturmaTarihi, 'dd/MM/yyyy')}">01/01/2024</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a th:href="@{/admin/kitaplar/{id}(id=${kitap.id})}" class="btn btn-sm btn-outline-info" title="Görüntüle">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a th:href="@{/admin/kitaplar/{id}/duzenle(id=${kitap.id})}" class="btn btn-sm btn-outline-warning" title="Düzenle">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    th:onclick="'confirmDelete(' + ${kitap.id} + ', \'' + ${kitap.ad} + '\')'"
+                                                    title="Sil">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav th:if="${kitaplar.totalPages > 1}" aria-label="Kitap pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${kitaplar.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/kitaplar(page=${kitaplar.number - 1}, size=${kitaplar.size}, search=${param.search}, kategoriId=${param.kategoriId}, stokDurumu=${param.stokDurumu}, minFiyat=${param.minFiyat}, maxFiyat=${param.maxFiyat}, sortBy=${param.sortBy}, sortDir=${param.sortDir})}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            <li th:each="pageNum : ${#numbers.sequence(0, kitaplar.totalPages - 1)}" 
+                                class="page-item" 
+                                th:classappend="${pageNum == kitaplar.number} ? 'active'">
+                                <a class="page-link" th:href="@{/admin/kitaplar(page=${pageNum}, size=${kitaplar.size}, search=${param.search}, kategoriId=${param.kategoriId}, stokDurumu=${param.stokDurumu}, minFiyat=${param.minFiyat}, maxFiyat=${param.maxFiyat}, sortBy=${param.sortBy}, sortDir=${param.sortDir})}" 
+                                   th:text="${pageNum + 1}">1</a>
+                            </li>
+                            
+                            <li class="page-item" th:classappend="${kitaplar.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/admin/kitaplar(page=${kitaplar.number + 1}, size=${kitaplar.size}, search=${param.search}, kategoriId=${param.kategoriId}, stokDurumu=${param.stokDurumu}, minFiyat=${param.minFiyat}, maxFiyat=${param.maxFiyat}, sortBy=${param.sortBy}, sortDir=${param.sortDir})}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <div th:if="${kitaplar.content == null or kitaplar.content.isEmpty()}" class="text-center text-muted py-5">
+                    <i class="fas fa-book fa-4x mb-3 d-block"></i>
+                    <h5>Henüz kitap bulunmuyor</h5>
+                    <p>İlk kitabı eklemek için aşağıdaki butonu kullanabilirsiniz.</p>
+                    <a href="/admin/kitaplar/yeni" class="btn btn-success">
+                        <i class="fas fa-plus"></i> İlk Kitabı Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Kitap Sil
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong id="deleteKitapAd"></strong> kitabını silmek istediğinizden emin misiniz?</p>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Dikkat:</strong> Bu işlem geri alınamaz. Kitapla ilgili tüm veriler silinecektir.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <form id="deleteForm" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="delete">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function confirmDelete(kitapId, kitapAd) {
+            const deleteForm = document.getElementById('deleteForm');
+            const deleteKitapAd = document.getElementById('deleteKitapAd');
+            
+            deleteForm.action = '/admin/kitaplar/' + kitapId;
+            deleteKitapAd.textContent = kitapAd;
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+</body>
+</html>

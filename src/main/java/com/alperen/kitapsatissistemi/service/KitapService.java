@@ -1,13 +1,18 @@
 package com.alperen.kitapsatissistemi.service;
 
 import com.alperen.kitapsatissistemi.entity.Kitap;
+import com.alperen.kitapsatissistemi.entity.Kategori;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.repository.KitapRepository;
 import com.alperen.kitapsatissistemi.repository.KategoriRepository;
+import com.alperen.kitapsatissistemi.repository.SiparisDetayRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -22,11 +27,13 @@ public class KitapService {
     
     private final KitapRepository kitapRepository;
     private final KategoriRepository kategoriRepository;
+    private final SiparisDetayRepository siparisDetayRepository;
     
     @Autowired
-    public KitapService(KitapRepository kitapRepository, KategoriRepository kategoriRepository) {
+    public KitapService(KitapRepository kitapRepository, KategoriRepository kategoriRepository, SiparisDetayRepository siparisDetayRepository) {
         this.kitapRepository = kitapRepository;
         this.kategoriRepository = kategoriRepository;
+        this.siparisDetayRepository = siparisDetayRepository;
     }
     
     /**
@@ -90,7 +97,7 @@ public class KitapService {
      */
     @Transactional(readOnly = true)
     public List<Kitap> getKitaplarByKategoriId(Long kategoriId) {
-        return kitapRepository.findByKategoriId(kategoriId);
+        return kitapRepository.findByKategori_Id(kategoriId);
     }
     
     /**
@@ -105,9 +112,33 @@ public class KitapService {
      * Yeni kitap oluştur
      */
     public Kitap createKitap(Kitap kitap) {
+        // Input validation
+        if (kitap == null) {
+            throw new BusinessException("Kitap bilgileri boş olamaz");
+        }
+        if (!StringUtils.hasText(kitap.getAd())) {
+            throw new BusinessException("Kitap adı boş olamaz");
+        }
+        if (!StringUtils.hasText(kitap.getYazar())) {
+            throw new BusinessException("Kitap yazarı boş olamaz");
+        }
+        if (kitap.getFiyat() == null || kitap.getFiyat().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Kitap fiyatı pozitif olmalıdır");
+        }
+        if (kitap.getKategoriId() == null) {
+            throw new BusinessException("Kategori ID'si boş olamaz");
+        }
+        
         // Kategori var mı kontrol et
         if (!kategoriRepository.existsById(kitap.getKategoriId())) {
-            throw new RuntimeException("Kategori bulunamadı, ID: " + kitap.getKategoriId());
+            throw new EntityNotFoundBusinessException("Kategori", kitap.getKategoriId());
+        }
+        
+        // Kitap adını ve yazarını trim et
+        kitap.setAd(kitap.getAd().trim());
+        kitap.setYazar(kitap.getYazar().trim());
+        if (StringUtils.hasText(kitap.getAciklama())) {
+            kitap.setAciklama(kitap.getAciklama().trim());
         }
         
         return kitapRepository.save(kitap);
@@ -117,36 +148,72 @@ public class KitapService {
      * Kitap güncelle
      */
     public Kitap updateKitap(Long id, Kitap kitapDetaylari) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kitap ID'si boş olamaz");
+        }
+        if (kitapDetaylari == null) {
+            throw new BusinessException("Kitap detayları boş olamaz");
+        }
+        if (!StringUtils.hasText(kitapDetaylari.getAd())) {
+            throw new BusinessException("Kitap adı boş olamaz");
+        }
+        if (!StringUtils.hasText(kitapDetaylari.getYazar())) {
+            throw new BusinessException("Kitap yazarı boş olamaz");
+        }
+        if (kitapDetaylari.getFiyat() == null || kitapDetaylari.getFiyat().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Kitap fiyatı pozitif olmalıdır");
+        }
+        if (kitapDetaylari.getKategoriId() == null) {
+            throw new BusinessException("Kategori ID'si boş olamaz");
+        }
+        
+        // Kategori var mı kontrol et
+        if (!kategoriRepository.existsById(kitapDetaylari.getKategoriId())) {
+            throw new EntityNotFoundBusinessException("Kategori", kitapDetaylari.getKategoriId());
+        }
+        
         return kitapRepository.findById(id)
                 .map(kitap -> {
-                    // Kategori var mı kontrol et
-                    if (!kategoriRepository.existsById(kitapDetaylari.getKategoriId())) {
-                        throw new RuntimeException("Kategori bulunamadı, ID: " + kitapDetaylari.getKategoriId());
+                    kitap.setAd(kitapDetaylari.getAd().trim());
+                    kitap.setYazar(kitapDetaylari.getYazar().trim());
+                    kitap.setFiyat(kitapDetaylari.getFiyat());
+                    if (StringUtils.hasText(kitapDetaylari.getAciklama())) {
+                        kitap.setAciklama(kitapDetaylari.getAciklama().trim());
+                    }
+                    if (StringUtils.hasText(kitapDetaylari.getResimUrl())) {
+                        kitap.setResimUrl(kitapDetaylari.getResimUrl().trim());
                     }
                     
-                    kitap.setAd(kitapDetaylari.getAd());
-                    kitap.setYazar(kitapDetaylari.getYazar());
-                    kitap.setFiyat(kitapDetaylari.getFiyat());
-                    kitap.setAciklama(kitapDetaylari.getAciklama());
-                    kitap.setResimUrl(kitapDetaylari.getResimUrl());
-                    kitap.setKategoriId(kitapDetaylari.getKategoriId());
+                    // Kategori güncelleme
+                    if (kitapDetaylari.getKategori() != null) {
+                        kitap.setKategori(kitapDetaylari.getKategori());
+                    }
                     
                     return kitapRepository.save(kitap);
                 })
-                .orElseThrow(() -> new RuntimeException("Kitap bulunamadı, ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Kitap", id));
     }
     
     /**
      * Kitap sil
      */
     public void deleteKitap(Long id) {
-        if (!kitapRepository.existsById(id)) {
-            throw new RuntimeException("Kitap bulunamadı, ID: " + id);
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kitap ID'si boş olamaz");
         }
-        
-        // TODO: Bu kitaba ait siparişler varsa silme işlemini engelle
-        // SiparisDetayService ile kontrol edilebilir
-        
+
+        // Kitap var mı kontrol et
+        if (!kitapRepository.existsById(id)) {
+            throw new EntityNotFoundBusinessException("Kitap", id);
+        }
+
+        // Bu kitaba ait siparişler varsa silme işlemini engelle
+        if (siparisDetayRepository.countByKitap_Id(id) > 0) {
+            throw new BusinessException("Bu kitaba ait siparişler bulunduğu için silinemez. Kitap sadece stoktan kaldırılabilir.");
+        }
+
         kitapRepository.deleteById(id);
     }
     
@@ -203,7 +270,7 @@ public class KitapService {
      */
     @Transactional(readOnly = true)
     public long getKitapCountByKategoriId(Long kategoriId) {
-        return kitapRepository.countByKategoriId(kategoriId);
+        return kitapRepository.countByKategori_Id(kategoriId);
     }
     
     /**
@@ -215,11 +282,19 @@ public class KitapService {
     }
     
     /**
+     * Son eklenen kitapları getir
+     */
+    @Transactional(readOnly = true)
+    public List<Kitap> getLatestKitaplar(int limit) {
+        return kitapRepository.findTopByOrderByIdDesc(limit);
+    }
+    
+    /**
      * Kategoriye göre kitap sayısını getir
      */
     @Transactional(readOnly = true)
     public long countByKategoriId(Long kategoriId) {
-        return kitapRepository.countByKategoriId(kategoriId);
+        return kitapRepository.countByKategori_Id(kategoriId);
     }
 
     // Thymeleaf template'ler için ek metodlar
@@ -261,7 +336,7 @@ public class KitapService {
      */
     @Transactional(readOnly = true)
     public Page<Kitap> findByKategoriId(Long kategoriId, Pageable pageable) {
-        return kitapRepository.findByKategoriId(kategoriId, pageable);
+        return kitapRepository.findByKategori_Id(kategoriId, pageable);
     }
 
     /**
@@ -269,7 +344,7 @@ public class KitapService {
      */
     @Transactional(readOnly = true)
     public Page<Kitap> findByAdContainingIgnoreCaseAndKategoriId(String ad, Long kategoriId, Pageable pageable) {
-        return kitapRepository.findByAdContainingIgnoreCaseAndKategoriId(ad, kategoriId, pageable);
+        return kitapRepository.findByAdContainingIgnoreCaseAndKategori_Id(ad, kategoriId, pageable);
     }
 
     /**
@@ -277,7 +352,7 @@ public class KitapService {
      */
     @Transactional(readOnly = true)
     public List<Kitap> findByKategoriIdAndIdNot(Long kategoriId, Long excludeId) {
-        return kitapRepository.findByKategoriIdAndIdNot(kategoriId, excludeId);
+        return kitapRepository.findByKategori_IdAndIdNot(kategoriId, excludeId);
     }
 
     /**

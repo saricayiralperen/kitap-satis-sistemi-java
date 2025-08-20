@@ -2,6 +2,7 @@ package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.*;
 import com.alperen.kitapsatissistemi.service.*;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -118,6 +119,8 @@ public class AdminDashboardController {
             model.addAttribute("kategoriLabels", kategoriLabels);
             model.addAttribute("kategoriValues", kategoriValues);
             
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", "İş kuralı hatası: " + e.getMessage());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "İstatistikler yüklenirken hata oluştu: " + e.getMessage());
             e.printStackTrace();
@@ -224,20 +227,7 @@ public class AdminDashboardController {
         return "admin/raporlar";
     }
 
-    /**
-     * Admin ayarlar sayfası
-     * GET /admin/ayarlar
-     */
-    @GetMapping("/ayarlar")
-    public String ayarlar(Model model, HttpSession session) {
-        // Admin kontrolü
-        if (!isAdmin(session)) {
-            return "redirect:/admin/login";
-        }
-        
-        model.addAttribute("title", "Ayarlar");
-        return "admin/ayarlar";
-    }
+    // Removed duplicate '/admin/ayarlar' mapping to avoid ambiguity; handled in AdminController.
 
     /**
      * Admin kontrolü yardımcı metodu

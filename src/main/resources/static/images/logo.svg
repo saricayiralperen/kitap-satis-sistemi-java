@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100">
+  <!-- Background -->
+  <rect width="500" height="100" fill="#7B68EE" rx="10"/>
+  
+  <!-- Book icon -->
+  <g transform="translate(20, 25)">
+    <!-- Left book page -->
+    <path d="M5 15 Q5 5 15 5 L25 5 L25 45 L15 45 Q5 45 5 35 Z" fill="white" stroke="white" stroke-width="1"/>
+    <!-- Right book page -->
+    <path d="M25 5 L35 5 Q45 5 45 15 L45 35 Q45 45 35 45 L25 45 Z" fill="white" stroke="white" stroke-width="1"/>
+    <!-- Book binding -->
+    <line x1="25" y1="5" x2="25" y2="45" stroke="white" stroke-width="2"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="80" y="60" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white">AlperenBooks</text>
+</svg>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Kategori Yönetimi</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2"><i class="fas fa-tags"></i> Kategori Yönetimi</h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <a th:href="@{/admin/kategoriler/yeni}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Yeni Kategori
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search and Filter -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <form th:action="@{/admin/kategoriler}" method="get" class="d-flex">
+                    <input type="text" class="form-control me-2" name="search" th:value="${param.search}" placeholder="Kategori ara...">
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="text-muted">Toplam: <strong th:text="${kategoriler.totalElements}">0</strong> kategori</span>
+            </div>
+        </div>
+        
+        <!-- Categories Table -->
+        <div class="card shadow">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Kategori Adı</th>
+                                <th>Açıklama</th>
+                                <th>Kitap Sayısı</th>
+                                <th>Oluşturma Tarihi</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${kategoriler.isEmpty()}">
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-tags fa-3x mb-3 d-block"></i>
+                                    Henüz kategori bulunmuyor.
+                                </td>
+                            </tr>
+                            <tr th:each="kategori : ${kategoriler.content}">
+                                <td th:text="${kategori.id}">1</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar me-3">
+                                            <div class="avatar-initial bg-info rounded-circle">
+                                                <i class="fas fa-tag"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0" th:text="${kategori.ad}">Kategori Adı</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span th:text="${kategori.aciklama}" class="text-muted">Kategori açıklaması</span>
+                                    <span th:if="${#strings.isEmpty(kategori.aciklama)}" class="text-muted fst-italic">Açıklama yok</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary" th:text="${kategori.kitaplar != null ? kategori.kitaplar.size() : 0}">0</span>
+                                </td>
+                                <td th:text="${#temporals.format(kategori.olusturmaTarihi, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/admin/kategoriler/{id}(id=${kategori.id})}" 
+                                           class="btn btn-sm btn-outline-info" title="Görüntüle">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/admin/kategoriler/{id}/duzenle(id=${kategori.id})}" 
+                                           class="btn btn-sm btn-outline-warning" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                th:onclick="'confirmDelete(' + ${kategori.id} + ', \'' + ${kategori.ad} + '\', ' + ${kategori.kitaplar != null ? kategori.kitaplar.size() : 0} + ')'" 
+                                                title="Sil">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <nav th:if="${kategoriler.totalPages > 1}" aria-label="Kategori sayfalama">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${kategoriler.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/kategoriler(page=${kategoriler.number - 1}, search=${param.search})}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                        
+                        <li th:each="pageNum : ${#numbers.sequence(0, kategoriler.totalPages - 1)}" 
+                            class="page-item" th:classappend="${pageNum == kategoriler.number} ? 'active'">
+                            <a class="page-link" th:href="@{/admin/kategoriler(page=${pageNum}, search=${param.search})}" 
+                               th:text="${pageNum + 1}">1</a>
+                        </li>
+                        
+                        <li class="page-item" th:classappend="${kategoriler.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/admin/kategoriler(page=${kategoriler.number + 1}, search=${param.search})}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Statistics Cards -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card border-left-primary shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                    Toplam Kategori
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${kategoriler.totalElements}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-tags fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    En Popüler
+                                </div>
+                                <div class="h6 mb-0 font-weight-bold text-gray-800" th:text="${enPopulerKategori?.ad ?: 'Yok'}">Kategori</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-star fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card border-left-info shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                    Toplam Kitap
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${toplamKitapSayisi}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-book fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Boş Kategori
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${bosKategoriSayisi}">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Kategori Sil
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong id="deleteKategoriAd"></strong> kategorisini silmek istediğinizden emin misiniz?</p>
+                        <div id="deleteWarning" class="alert alert-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Uyarı:</strong> Bu kategoride <span id="kitapSayisi"></span> kitap bulunmaktadır. 
+                            Kategori silindiğinde bu kitaplar kategorisiz kalacaktır.
+                        </div>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Dikkat:</strong> Bu işlem geri alınamaz.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <form id="deleteForm" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="delete">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function confirmDelete(kategoriId, kategoriAd, kitapSayisi) {
+            const deleteForm = document.getElementById('deleteForm');
+            const deleteKategoriAd = document.getElementById('deleteKategoriAd');
+            const deleteWarning = document.getElementById('deleteWarning');
+            const kitapSayisiSpan = document.getElementById('kitapSayisi');
+            
+            deleteForm.action = '/admin/kategoriler/' + kategoriId;
+            deleteKategoriAd.textContent = kategoriAd;
+            
+            if (kitapSayisi > 0) {
+                kitapSayisiSpan.textContent = kitapSayisi;
+                deleteWarning.style.display = 'block';
+            } else {
+                deleteWarning.style.display = 'none';
+            }
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    </script>
+</body>
+</html>

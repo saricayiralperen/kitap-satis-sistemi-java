@@ -14,28 +14,22 @@ public class Favori {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @NotNull(message = "Kullanıcı ID zorunludur.")
-    @Column(name = "kullanici_id", nullable = false)
-    private Long kullaniciId;
-    
-    @NotNull(message = "Kitap ID zorunludur.")
-    @Column(name = "kitap_id", nullable = false)
-    private Long kitapId;
-    
+    @NotNull(message = "Kullanıcı zorunludur.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "kullanici_id", insertable = false, updatable = false)
+    @JoinColumn(name = "kullanici_id", nullable = false)
     private Kullanici kullanici;
     
+    @NotNull(message = "Kitap zorunludur.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "kitap_id", insertable = false, updatable = false)
+    @JoinColumn(name = "kitap_id", nullable = false)
     private Kitap kitap;
     
     // Constructors
     public Favori() {}
     
-    public Favori(Long kullaniciId, Long kitapId) {
-        this.kullaniciId = kullaniciId;
-        this.kitapId = kitapId;
+    public Favori(Kullanici kullanici, Kitap kitap) {
+        this.kullanici = kullanici;
+        this.kitap = kitap;
     }
     
     // Getters and Setters
@@ -48,19 +42,11 @@ public class Favori {
     }
     
     public Long getKullaniciId() {
-        return kullaniciId;
-    }
-    
-    public void setKullaniciId(Long kullaniciId) {
-        this.kullaniciId = kullaniciId;
+        return kullanici != null ? kullanici.getId() : null;
     }
     
     public Long getKitapId() {
-        return kitapId;
-    }
-    
-    public void setKitapId(Long kitapId) {
-        this.kitapId = kitapId;
+        return kitap != null ? kitap.getId() : null;
     }
     
     public Kullanici getKullanici() {
@@ -83,8 +69,8 @@ public class Favori {
     public String toString() {
         return "Favori{" +
                 "id=" + id +
-                ", kullaniciId=" + kullaniciId +
-                ", kitapId=" + kitapId +
+                ", kullaniciId=" + getKullaniciId() +
+                ", kitapId=" + getKitapId() +
                 '}';
     }
 }

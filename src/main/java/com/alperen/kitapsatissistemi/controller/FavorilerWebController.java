@@ -1,6 +1,8 @@
 package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Favori;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.service.FavoriService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -37,6 +39,9 @@ public class FavorilerWebController {
             List<Favori> favoriler = favoriService.getFavorilerByKullaniciIdWithDetails(kullaniciId);
             model.addAttribute("favoriler", favoriler);
             model.addAttribute("title", "Favorilerim");
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("favoriler", new java.util.ArrayList<>());
         } catch (Exception e) {
             System.out.println("=== FAVORILER HATA DETAYI ===");
             System.out.println("Hata mesajı: " + e.getMessage());
@@ -66,6 +71,8 @@ public class FavorilerWebController {
         try {
             favoriService.deleteFavori(id);
             redirectAttributes.addFlashAttribute("successMessage", "Kitap favorilerden kaldırıldı.");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Favori kaldırılırken hata oluştu: " + e.getMessage());
         }

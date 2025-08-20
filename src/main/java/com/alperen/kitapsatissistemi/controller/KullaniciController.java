@@ -2,6 +2,7 @@ package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Kullanici;
 import com.alperen.kitapsatissistemi.service.KullaniciService;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,8 @@ public class KullaniciController {
             // Şifre hash'lerini gizle
             kullanicilar.forEach(k -> k.setSifreHash(null));
             return ResponseEntity.ok(kullanicilar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -58,6 +61,8 @@ public class KullaniciController {
                 return ResponseEntity.ok(k);
             }
             return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -77,6 +82,8 @@ public class KullaniciController {
                 return ResponseEntity.ok(k);
             }
             return ResponseEntity.notFound().build();
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -93,6 +100,8 @@ public class KullaniciController {
             // Şifre hash'lerini gizle
             kullanicilar.forEach(k -> k.setSifreHash(null));
             return ResponseEntity.ok(kullanicilar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -109,6 +118,8 @@ public class KullaniciController {
             // Şifre hash'lerini gizle
             kullanicilar.forEach(k -> k.setSifreHash(null));
             return ResponseEntity.ok(kullanicilar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -125,6 +136,8 @@ public class KullaniciController {
             // Şifre hash'lerini gizle
             kullanicilar.forEach(k -> k.setSifreHash(null));
             return ResponseEntity.ok(kullanicilar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -268,6 +281,8 @@ public class KullaniciController {
         try {
             boolean exists = kullaniciService.existsByEmail(email);
             return ResponseEntity.ok(exists);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -282,6 +297,8 @@ public class KullaniciController {
         try {
             long count = kullaniciService.getKullaniciCount();
             return ResponseEntity.ok(count);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -296,6 +313,8 @@ public class KullaniciController {
         try {
             long count = kullaniciService.getKullaniciCountByRol(rol);
             return ResponseEntity.ok(count);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

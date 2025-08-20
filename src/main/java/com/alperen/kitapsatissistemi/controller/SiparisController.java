@@ -2,7 +2,11 @@ package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Siparis;
 import com.alperen.kitapsatissistemi.entity.SiparisDetay;
+import com.alperen.kitapsatissistemi.entity.Kitap;
 import com.alperen.kitapsatissistemi.service.SiparisService;
+import com.alperen.kitapsatissistemi.service.KitapService;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -15,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * SiparisController - .NET C# projesindeki API controller'dan dönüştürülmüştür
@@ -25,10 +30,12 @@ import java.util.Optional;
 public class SiparisController {
     
     private final SiparisService siparisService;
+    private final KitapService kitapService;
     
     @Autowired
-    public SiparisController(SiparisService siparisService) {
+    public SiparisController(SiparisService siparisService, KitapService kitapService) {
         this.siparisService = siparisService;
+        this.kitapService = kitapService;
     }
     
     /**
@@ -45,6 +52,8 @@ public class SiparisController {
                 siparisler = siparisService.getAllSiparisler();
             }
             return ResponseEntity.ok(siparisler);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -100,6 +109,8 @@ public class SiparisController {
         try {
             List<Siparis> siparisler = siparisService.getSiparislerByDurum(durum);
             return ResponseEntity.ok(siparisler);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -116,6 +127,8 @@ public class SiparisController {
         try {
             List<Siparis> siparisler = siparisService.getSiparislerByTarihAraligi(baslangic, bitis);
             return ResponseEntity.ok(siparisler);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -131,6 +144,8 @@ public class SiparisController {
         try {
             List<Siparis> siparisler = siparisService.getSiparislerByTutarAraligi(min, max);
             return ResponseEntity.ok(siparisler);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -151,12 +166,15 @@ public class SiparisController {
             List<SiparisDetay> siparisDetaylari = detaylarMap.stream()
                     .map(detayMap -> {
                         SiparisDetay detay = new SiparisDetay();
-                        detay.setKitapId(Long.valueOf(detayMap.get("kitapId").toString()));
+                        Long kitapId = Long.valueOf(detayMap.get("kitapId").toString());
+                        Kitap kitap = kitapService.getKitapById(kitapId)
+                            .orElseThrow(() -> new RuntimeException("Kitap bulunamadı: " + kitapId));
+                        detay.setKitap(kitap);
                         detay.setAdet(Integer.valueOf(detayMap.get("adet").toString()));
                         detay.setFiyat(new BigDecimal(detayMap.get("fiyat").toString()));
                         return detay;
                     })
-                    .toList();
+                    .collect(Collectors.toList());
             
             Siparis yeniSiparis = siparisService.createSiparis(kullaniciId, siparisDetaylari);
             return ResponseEntity.status(HttpStatus.CREATED).body(yeniSiparis);

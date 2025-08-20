@@ -16,14 +16,6 @@ public class SiparisDetay {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @NotNull(message = "Sipariş ID zorunludur.")
-    @Column(name = "siparis_id", nullable = false)
-    private Long siparisId;
-    
-    @NotNull(message = "Kitap ID zorunludur.")
-    @Column(name = "kitap_id", nullable = false)
-    private Long kitapId;
-    
     @NotNull(message = "Adet zorunludur.")
     @Min(value = 1, message = "Adet en az 1 olmalıdır.")
     @Column(name = "adet", nullable = false)
@@ -33,20 +25,22 @@ public class SiparisDetay {
     @Column(name = "fiyat", nullable = false, precision = 18, scale = 2)
     private BigDecimal fiyat;
     
+    @NotNull(message = "Sipariş zorunludur.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "siparis_id", insertable = false, updatable = false)
+    @JoinColumn(name = "siparis_id", nullable = false)
     private Siparis siparis;
     
+    @NotNull(message = "Kitap zorunludur.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "kitap_id", insertable = false, updatable = false)
+    @JoinColumn(name = "kitap_id", nullable = false)
     private Kitap kitap;
     
     // Constructors
     public SiparisDetay() {}
     
-    public SiparisDetay(Long siparisId, Long kitapId, Integer adet, BigDecimal fiyat) {
-        this.siparisId = siparisId;
-        this.kitapId = kitapId;
+    public SiparisDetay(Siparis siparis, Kitap kitap, Integer adet, BigDecimal fiyat) {
+        this.siparis = siparis;
+        this.kitap = kitap;
         this.adet = adet;
         this.fiyat = fiyat;
     }
@@ -61,19 +55,11 @@ public class SiparisDetay {
     }
     
     public Long getSiparisId() {
-        return siparisId;
-    }
-    
-    public void setSiparisId(Long siparisId) {
-        this.siparisId = siparisId;
+        return siparis != null ? siparis.getId() : null;
     }
     
     public Long getKitapId() {
-        return kitapId;
-    }
-    
-    public void setKitapId(Long kitapId) {
-        this.kitapId = kitapId;
+        return kitap != null ? kitap.getId() : null;
     }
     
     public Integer getAdet() {
@@ -120,8 +106,8 @@ public class SiparisDetay {
     public String toString() {
         return "SiparisDetay{" +
                 "id=" + id +
-                ", siparisId=" + siparisId +
-                ", kitapId=" + kitapId +
+                ", siparisId=" + getSiparisId() +
+                ", kitapId=" + getKitapId() +
                 ", adet=" + adet +
                 ", fiyat=" + fiyat +
                 '}';

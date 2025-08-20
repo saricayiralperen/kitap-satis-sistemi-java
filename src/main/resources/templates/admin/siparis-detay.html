@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="'Sipariş #' + ${siparis.id} + ' - Detay'">Sipariş Detay</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-shopping-cart"></i> 
+                Sipariş Detayı
+                <small class="text-muted" th:text="'#' + ${siparis.id}">#1</small>
+            </h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <a th:href="@{/admin/siparisler}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                    <a th:href="@{/admin/siparisler/{id}/edit(id=${siparis.id})}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </a>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-cog"></i> İşlemler
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li th:if="${siparis.durum == 'BEKLEMEDE'}">
+                            <a class="dropdown-item" th:href="@{/admin/siparisler/{id}/status(id=${siparis.id}, status='ONAYLANDI')}">
+                                <i class="fas fa-check text-info"></i> Onayla
+                            </a>
+                        </li>
+                        <li th:if="${siparis.durum == 'ONAYLANDI'}">
+                            <a class="dropdown-item" th:href="@{/admin/siparisler/{id}/status(id=${siparis.id}, status='KARGOLANDI')}">
+                                <i class="fas fa-shipping-fast text-primary"></i> Kargola
+                            </a>
+                        </li>
+                        <li th:if="${siparis.durum == 'KARGOLANDI'}">
+                            <a class="dropdown-item" th:href="@{/admin/siparisler/{id}/status(id=${siparis.id}, status='TESLIM_EDILDI')}">
+                                <i class="fas fa-check-circle text-success"></i> Teslim Et
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler/{id}/invoice(id=${siparis.id})}">
+                            <i class="fas fa-file-invoice"></i> Fatura Görüntüle
+                        </a></li>
+                        <li><a class="dropdown-item" th:href="@{/admin/siparisler/{id}/print(id=${siparis.id})}">
+                            <i class="fas fa-print"></i> Yazdır
+                        </a></li>
+                        <li th:if="${siparis.durum != 'IPTAL_EDILDI' and siparis.durum != 'TESLIM_EDILDI'}">
+                            <li><hr class="dropdown-divider"></li>
+                            <a class="dropdown-item text-danger" 
+                               th:onclick="'confirmCancel(' + ${siparis.id} + ', \'' + ${siparis.id} + '\')'"
+                               href="#">
+                                <i class="fas fa-times"></i> İptal Et
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Order Information -->
+            <div class="col-lg-8">
+                <!-- Order Status -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-info-circle"></i> Sipariş Durumu
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <span class="badge fs-6" 
+                                              th:classappend="${siparis.durum == 'BEKLEMEDE'} ? 'bg-warning' : 
+                                                             (${siparis.durum == 'ONAYLANDI'} ? 'bg-info' : 
+                                                             (${siparis.durum == 'KARGOLANDI'} ? 'bg-primary' : 
+                                                             (${siparis.durum == 'TESLIM_EDILDI'} ? 'bg-success' : 'bg-danger')))"
+                                              th:text="${siparis.durum == 'BEKLEMEDE'} ? 'Beklemede' : 
+                                                      (${siparis.durum == 'ONAYLANDI'} ? 'Onaylandı' : 
+                                                      (${siparis.durum == 'KARGOLANDI'} ? 'Kargolandı' : 
+                                                      (${siparis.durum == 'TESLIM_EDILDI'} ? 'Teslim Edildi' : 'İptal Edildi')))">Durum</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">Sipariş Durumu</h5>
+                                        <small class="text-muted" th:text="${#temporals.format(siparis.olusturmaTarihi, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="me-3">
+                                        <span class="badge fs-6" 
+                                              th:classappend="${siparis.odemeDurumu == 'ODENDI'} ? 'bg-success' : 
+                                                             (${siparis.odemeDurumu == 'BEKLEMEDE'} ? 'bg-warning' : 'bg-danger')"
+                                              th:text="${siparis.odemeDurumu == 'ODENDI'} ? 'Ödendi' : 
+                                                      (${siparis.odemeDurumu == 'BEKLEMEDE'} ? 'Beklemede' : 'İade Edildi')">Ödeme</span>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0">Ödeme Durumu</h5>
+                                        <small class="text-muted" th:text="${siparis.odemeYontemi ?: 'Belirtilmemiş'}">Kredi Kartı</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Timeline -->
+                        <div class="timeline mt-4">
+                            <div class="timeline-item" th:classappend="${siparis.durum == 'BEKLEMEDE' or siparis.durum == 'ONAYLANDI' or siparis.durum == 'KARGOLANDI' or siparis.durum == 'TESLIM_EDILDI'} ? 'completed'">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Sipariş Alındı</h6>
+                                    <p class="timeline-text" th:text="${#temporals.format(siparis.olusturmaTarihi, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item" th:classappend="${siparis.durum == 'ONAYLANDI' or siparis.durum == 'KARGOLANDI' or siparis.durum == 'TESLIM_EDILDI'} ? 'completed'">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Sipariş Onaylandı</h6>
+                                    <p class="timeline-text" th:text="${siparis.onayTarihi != null ? #temporals.format(siparis.onayTarihi, 'dd/MM/yyyy HH:mm') : 'Henüz onaylanmadı'}">Henüz onaylanmadı</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item" th:classappend="${siparis.durum == 'KARGOLANDI' or siparis.durum == 'TESLIM_EDILDI'} ? 'completed'">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Kargoya Verildi</h6>
+                                    <p class="timeline-text" th:text="${siparis.kargoTarihi != null ? #temporals.format(siparis.kargoTarihi, 'dd/MM/yyyy HH:mm') : 'Henüz kargoya verilmedi'}">Henüz kargoya verilmedi</p>
+                                </div>
+                            </div>
+                            
+                            <div class="timeline-item" th:classappend="${siparis.durum == 'TESLIM_EDILDI'} ? 'completed'">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Teslim Edildi</h6>
+                                    <p class="timeline-text" th:text="${siparis.teslimTarihi != null ? #temporals.format(siparis.teslimTarihi, 'dd/MM/yyyy HH:mm') : 'Henüz teslim edilmedi'}">Henüz teslim edilmedi</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Items -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-list"></i> Sipariş Kalemleri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Kitap</th>
+                                        <th>Birim Fiyat</th>
+                                        <th>Adet</th>
+                                        <th>Toplam</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="kalem : ${siparis.siparisKalemleri}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <div class="book-cover bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 70px; border-radius: 4px;">
+                                                        <i class="fas fa-book text-muted"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">
+                                                        <a th:href="@{/admin/kitaplar/{id}(id=${kalem.kitap.id})}" 
+                                                           class="text-decoration-none" 
+                                                           th:text="${kalem.kitap.ad}">Kitap Adı</a>
+                                                    </h6>
+                                                    <small class="text-muted" th:text="${kalem.kitap.yazar}">Yazar</small><br>
+                                                    <small class="text-muted" th:text="'ISBN: ' + ${kalem.kitap.isbn ?: 'Yok'}">ISBN: 123456789</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold" th:text="${kalem.birimFiyat} + ' ₺'">0 ₺</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${kalem.adet}">1</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success" th:text="${kalem.toplamFiyat} + ' ₺'">0 ₺</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-end">Ara Toplam:</th>
+                                        <th th:text="${siparis.araToplam} + ' ₺'">0 ₺</th>
+                                    </tr>
+                                    <tr th:if="${siparis.kargoUcreti > 0}">
+                                        <th colspan="3" class="text-end">Kargo Ücreti:</th>
+                                        <th th:text="${siparis.kargoUcreti} + ' ₺'">0 ₺</th>
+                                    </tr>
+                                    <tr th:if="${siparis.indirimTutari > 0}">
+                                        <th colspan="3" class="text-end">İndirim:</th>
+                                        <th class="text-danger" th:text="'-' + ${siparis.indirimTutari} + ' ₺'">-0 ₺</th>
+                                    </tr>
+                                    <tr class="table-success">
+                                        <th colspan="3" class="text-end">Genel Toplam:</th>
+                                        <th class="text-success" th:text="${siparis.toplamTutar} + ' ₺'">0 ₺</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Shipping Address -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-map-marker-alt"></i> Teslimat Adresi
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Teslimat Bilgileri</h6>
+                                <p class="mb-1" th:text="${siparis.teslimatAdi ?: siparis.kullanici.ad + ' ' + siparis.kullanici.soyad}">Ad Soyad</p>
+                                <p class="mb-1" th:text="${siparis.teslimatTelefon ?: siparis.kullanici.telefon}">Telefon</p>
+                                <p class="mb-0 text-muted" th:text="${siparis.teslimatEmail ?: siparis.kullanici.email}">Email</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Adres</h6>
+                                <p class="mb-0" th:text="${siparis.teslimatAdres ?: siparis.kullanici.adres}">Adres bilgisi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Customer Info -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-info">
+                            <i class="fas fa-user"></i> Müşteri Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="avatar avatar-lg mx-auto mb-2">
+                                <div class="avatar-title bg-primary rounded-circle fs-3">
+                                    <span th:text="${siparis.kullanici.ad.substring(0,1).toUpperCase()}">A</span>
+                                </div>
+                            </div>
+                            <h5 class="mb-1" th:text="${siparis.kullanici.ad + ' ' + siparis.kullanici.soyad}">Ad Soyad</h5>
+                            <p class="text-muted mb-0" th:text="${siparis.kullanici.email}">email@example.com</p>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h4 class="text-primary mb-0" th:text="${kullaniciSiparisCount ?: 0}">0</h4>
+                                    <small class="text-muted">Toplam Sipariş</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-success mb-0" th:text="${kullaniciToplamHarcama ?: 0} + ' ₺'">0 ₺</h4>
+                                <small class="text-muted">Toplam Harcama</small>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/admin/kullanicilar/{id}(id=${siparis.kullanici.id})}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-user"></i> Müşteri Detayı
+                            </a>
+                            <a th:href="@{/admin/siparisler(kullaniciId=${siparis.kullanici.id})}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-shopping-cart"></i> Diğer Siparişleri
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Summary -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-calculator"></i> Sipariş Özeti
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sipariş No:</span>
+                            <span class="fw-bold" th:text="'#' + ${siparis.id}">#1</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Sipariş Tarihi:</span>
+                            <span th:text="${#temporals.format(siparis.olusturmaTarihi, 'dd/MM/yyyy')}">01/01/2024</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Toplam Ürün:</span>
+                            <span th:text="${siparis.siparisKalemleri.size()}">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Toplam Adet:</span>
+                            <span th:text="${#aggregates.sum(siparis.siparisKalemleri.![adet])}">0</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Ara Toplam:</span>
+                            <span th:text="${siparis.araToplam} + ' ₺'">0 ₺</span>
+                        </div>
+                        <div th:if="${siparis.kargoUcreti > 0}" class="d-flex justify-content-between mb-2">
+                            <span>Kargo:</span>
+                            <span th:text="${siparis.kargoUcreti} + ' ₺'">0 ₺</span>
+                        </div>
+                        <div th:if="${siparis.indirimTutari > 0}" class="d-flex justify-content-between mb-2">
+                            <span>İndirim:</span>
+                            <span class="text-danger" th:text="'-' + ${siparis.indirimTutari} + ' ₺'">-0 ₺</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-bold">Genel Toplam:</span>
+                            <span class="fw-bold text-success" th:text="${siparis.toplamTutar} + ' ₺'">0 ₺</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-warning">
+                            <i class="fas fa-bolt"></i> Hızlı İşlemler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/admin/siparisler/{id}/edit(id=${siparis.id})}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Düzenle
+                            </a>
+                            <a th:href="@{/admin/siparisler/{id}/invoice(id=${siparis.id})}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-file-invoice"></i> Fatura
+                            </a>
+                            <a th:href="@{/admin/siparisler/{id}/print(id=${siparis.id})}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-print"></i> Yazdır
+                            </a>
+                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                    th:onclick="'sendNotification(' + ${siparis.id} + ', \'' + ${siparis.kullanici.email} + '\')'"
+                                    th:if="${siparis.durum != 'IPTAL_EDILDI'}">
+                                <i class="fas fa-envelope"></i> Bildirim Gönder
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cancel Confirmation Modal -->
+        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cancelModalLabel">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Sipariş İptal
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong id="cancelSiparisNo"></strong> numaralı siparişi iptal etmek istediğinizden emin misiniz?</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Uyarı:</strong> İptal edilen siparişler geri alınamaz.
+                        </div>
+                        <div class="mb-3">
+                            <label for="iptalNedeni" class="form-label">İptal Nedeni</label>
+                            <select class="form-select" id="iptalNedeni" name="iptalNedeni">
+                                <option value="">Neden seçiniz</option>
+                                <option value="Stok yetersizliği">Stok yetersizliği</option>
+                                <option value="Ödeme problemi">Ödeme problemi</option>
+                                <option value="Müşteri talebi">Müşteri talebi</option>
+                                <option value="Teknik sorun">Teknik sorun</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="iptalAciklama" class="form-label">Açıklama (İsteğe bağlı)</label>
+                            <textarea class="form-control" id="iptalAciklama" name="iptalAciklama" rows="3" placeholder="İptal nedeni hakkında detay verebilirsiniz..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                        <form id="cancelForm" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="patch">
+                            <input type="hidden" name="durum" value="IPTAL_EDILDI">
+                            <input type="hidden" name="iptalNedeni" id="hiddenIptalNedeni">
+                            <input type="hidden" name="iptalAciklama" id="hiddenIptalAciklama">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times"></i> İptal Et
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e3e6f0;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -22px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e3e6f0;
+            border: 2px solid #fff;
+        }
+        
+        .timeline-item.completed .timeline-marker {
+            background: #1cc88a;
+        }
+        
+        .timeline-title {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .timeline-text {
+            margin-bottom: 0;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .avatar {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .avatar-lg {
+            width: 80px;
+            height: 80px;
+        }
+        
+        .avatar-title {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+    </style>
+    
+    <script>
+        function confirmCancel(siparisId, siparisNo) {
+            const cancelForm = document.getElementById('cancelForm');
+            const cancelSiparisNo = document.getElementById('cancelSiparisNo');
+            
+            cancelForm.action = '/admin/siparisler/' + siparisId + '/status';
+            cancelSiparisNo.textContent = '#' + siparisNo;
+            
+            const cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            cancelModal.show();
+        }
+        
+        // Update hidden fields when modal form is submitted
+        document.getElementById('cancelForm').addEventListener('submit', function() {
+            document.getElementById('hiddenIptalNedeni').value = document.getElementById('iptalNedeni').value;
+            document.getElementById('hiddenIptalAciklama').value = document.getElementById('iptalAciklama').value;
+        });
+        
+        function sendNotification(siparisId, email) {
+            if (confirm(`${email} adresine sipariş durumu bildirimi göndermek istediğinizden emin misiniz?`)) {
+                fetch(`/admin/siparisler/${siparisId}/notify`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Bildirim başarıyla gönderildi.');
+                    } else {
+                        alert('Bildirim gönderilirken hata oluştu.');
+                    }
+                })
+                .catch(error => {
+                    alert('Bildirim gönderilirken hata oluştu.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>

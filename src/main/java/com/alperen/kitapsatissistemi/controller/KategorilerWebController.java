@@ -2,6 +2,7 @@ package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Kategori;
 import com.alperen.kitapsatissistemi.entity.Kitap;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
 import com.alperen.kitapsatissistemi.service.KategoriService;
 import com.alperen.kitapsatissistemi.service.KitapService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +46,12 @@ public class KategorilerWebController {
     @GetMapping
     public String index(Model model, HttpSession session) {
         // Kullanıcı oturum bilgilerini kontrol et
-        Long kullaniciId = (Long) session.getAttribute("kullaniciId");
-        String kullaniciAdi = (String) session.getAttribute("kullaniciAdi");
+        Long kullaniciId = (Long) session.getAttribute("KullaniciId");
+        String kullaniciAdi = (String) session.getAttribute("KullaniciAd");
         
         if (kullaniciId != null && kullaniciAdi != null) {
             model.addAttribute("isLoggedIn", true);
+            model.addAttribute("kullaniciId", kullaniciId);
             model.addAttribute("kullaniciAdi", kullaniciAdi);
         } else {
             model.addAttribute("isLoggedIn", false);
@@ -69,8 +71,14 @@ public class KategorilerWebController {
             
             return "kategoriler/index";
             
+        } catch (BusinessException e) {
+            // İş kuralı hatası durumunda boş liste gönder
+            model.addAttribute("kategoriler", Collections.emptyList());
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("title", "Kategoriler");
+            return "kategoriler/index";
         } catch (Exception e) {
-            // Hata durumunda boş liste gönder
+            // Genel hata durumunda boş liste gönder
             model.addAttribute("kategoriler", Collections.emptyList());
             model.addAttribute("errorMessage", "Kategoriler yüklenirken bir hata oluştu: " + e.getMessage());
             model.addAttribute("title", "Kategoriler");
@@ -120,6 +128,9 @@ public class KategorilerWebController {
             
             return "kategoriler/detay";
             
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "redirect:/kategoriler";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kategori detayları yüklenirken bir hata oluştu: " + e.getMessage());
             return "redirect:/kategoriler";

@@ -2,6 +2,8 @@ package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Kitap;
 import com.alperen.kitapsatissistemi.entity.Kategori;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.service.KitapService;
 import com.alperen.kitapsatissistemi.service.KategoriService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,11 +82,11 @@ public class KitapWebController {
             
             return "kitaplar/index";
             
-        } catch (Exception e) {
+        } catch (BusinessException e) {
             // Hata durumunda boş veriler gönder
             model.addAttribute("kitaplar", Collections.emptyList());
             model.addAttribute("kategoriler", Collections.emptyList());
-            model.addAttribute("error", "Kitaplar yüklenirken bir hata oluştu: " + e.getMessage());
+            model.addAttribute("error", e.getMessage());
             return "kitaplar/index";
         }
     }
@@ -120,8 +122,8 @@ public class KitapWebController {
                 return "error/404";
             }
             
-        } catch (Exception e) {
-            model.addAttribute("error", "Kitap detayları yüklenirken bir hata oluştu: " + e.getMessage());
+        } catch (BusinessException e) {
+            model.addAttribute("error", e.getMessage());
             return "error/500";
         }
     }

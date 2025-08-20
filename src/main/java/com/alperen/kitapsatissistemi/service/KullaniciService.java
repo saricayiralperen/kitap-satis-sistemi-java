@@ -1,13 +1,18 @@
 package com.alperen.kitapsatissistemi.service;
 
 import com.alperen.kitapsatissistemi.entity.Kullanici;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.DuplicateEntityException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.repository.KullaniciRepository;
+import com.alperen.kitapsatissistemi.repository.SiparisRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,12 +26,14 @@ import java.util.Optional;
 public class KullaniciService {
     
     private final KullaniciRepository kullaniciRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final SiparisRepository siparisRepository;
     
     @Autowired
-    public KullaniciService(KullaniciRepository kullaniciRepository) {
+    public KullaniciService(KullaniciRepository kullaniciRepository, PasswordEncoder passwordEncoder, SiparisRepository siparisRepository) {
         this.kullaniciRepository = kullaniciRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
+        this.siparisRepository = siparisRepository;
     }
     
     /**
@@ -50,7 +57,9 @@ public class KullaniciService {
      */
     @Transactional(readOnly = true)
     public Optional<Kullanici> getKullaniciByEmail(String email) {
-        return kullaniciRepository.findByEmail(email);
+        // Email'i normalize et
+        String normalizedEmail = email != null ? email.trim().toLowerCase() : "";
+        return kullaniciRepository.findByEmail(normalizedEmail);
     }
     
     /**
@@ -89,9 +98,35 @@ public class KullaniciService {
      * Yeni kullanıcı kaydet
      */
     public Kullanici registerKullanici(Kullanici kullanici, String sifre) {
+        // Input validation
+        if (kullanici == null) {
+            throw new BusinessException("Kullanıcı bilgisi boş olamaz");
+        }
+        
+        if (!StringUtils.hasText(sifre)) {
+            throw new BusinessException("Şifre boş olamaz");
+        }
+        
+        if (!StringUtils.hasText(kullanici.getEmail())) {
+            throw new BusinessException("Email adresi boş olamaz");
+        }
+        
+        if (!StringUtils.hasText(kullanici.getAdSoyad())) {
+            throw new BusinessException("Ad soyad boş olamaz");
+        }
+        
+        // Email ve ad soyad temizle
+        kullanici.setEmail(kullanici.getEmail().trim().toLowerCase());
+        kullanici.setAdSoyad(kullanici.getAdSoyad().trim());
+        
+        // Şifre uzunluk kontrolü
+        if (sifre.length() < 6) {
+            throw new BusinessException("Şifre en az 6 karakter olmalıdır");
+        }
+        
         // Email benzersiz mi kontrol et
         if (kullaniciRepository.existsByEmail(kullanici.getEmail())) {
-            throw new RuntimeException("Bu email adresi zaten kayıtlı: " + kullanici.getEmail());
+            throw new DuplicateEntityException("Kullanıcı", "email", kullanici.getEmail());
         }
         
         // Şifreyi hash'le
@@ -101,7 +136,7 @@ public class KullaniciService {
         kullanici.setKayitTarihi(LocalDateTime.now());
         
         // Rol belirtilmemişse User yap
-        if (kullanici.getRol() == null || kullanici.getRol().isEmpty()) {
+        if (!StringUtils.hasText(kullanici.getRol())) {
             kullanici.setRol("User");
         }
         
@@ -113,7 +148,9 @@ public class KullaniciService {
      */
     @Transactional(readOnly = true)
     public Optional<Kullanici> authenticateKullanici(String email, String sifre) {
-        Optional<Kullanici> kullaniciOpt = kullaniciRepository.findByEmail(email);
+        // Email'i normalize et (kayıt sırasında da toLowerCase yapılıyor)
+        String normalizedEmail = email != null ? email.trim().toLowerCase() : "";
+        Optional<Kullanici> kullaniciOpt = kullaniciRepository.findByEmail(normalizedEmail);
         
         if (kullaniciOpt.isPresent()) {
             Kullanici kullanici = kullaniciOpt.get();
@@ -129,33 +166,70 @@ public class KullaniciService {
      * Kullanıcı güncelle
      */
     public Kullanici updateKullanici(Long id, Kullanici kullaniciDetaylari) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kullanıcı ID'si boş olamaz");
+        }
+        
+        if (kullaniciDetaylari == null) {
+            throw new BusinessException("Kullanıcı bilgisi boş olamaz");
+        }
+        
+        if (!StringUtils.hasText(kullaniciDetaylari.getEmail())) {
+            throw new BusinessException("Email adresi boş olamaz");
+        }
+        
+        if (!StringUtils.hasText(kullaniciDetaylari.getAdSoyad())) {
+            throw new BusinessException("Ad soyad boş olamaz");
+        }
+        
+        // Email ve ad soyad temizle
+        kullaniciDetaylari.setEmail(kullaniciDetaylari.getEmail().trim().toLowerCase());
+        kullaniciDetaylari.setAdSoyad(kullaniciDetaylari.getAdSoyad().trim());
+        
         return kullaniciRepository.findById(id)
                 .map(kullanici -> {
                     // Email değiştiriliyorsa benzersizlik kontrolü yap
                     if (!kullanici.getEmail().equals(kullaniciDetaylari.getEmail()) &&
                         kullaniciRepository.existsByEmail(kullaniciDetaylari.getEmail())) {
-                        throw new RuntimeException("Bu email adresi zaten kayıtlı: " + kullaniciDetaylari.getEmail());
+                        throw new DuplicateEntityException("Kullanıcı", "email", kullaniciDetaylari.getEmail());
                     }
                     
                     kullanici.setAdSoyad(kullaniciDetaylari.getAdSoyad());
                     kullanici.setEmail(kullaniciDetaylari.getEmail());
-                    kullanici.setRol(kullaniciDetaylari.getRol());
+                    if (StringUtils.hasText(kullaniciDetaylari.getRol())) {
+                        kullanici.setRol(kullaniciDetaylari.getRol());
+                    }
                     
                     return kullaniciRepository.save(kullanici);
                 })
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı, ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Kullanıcı", id));
     }
     
     /**
      * Kullanıcı şifresini değiştir
      */
     public void changePassword(Long id, String eskiSifre, String yeniSifre) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kullanıcı ID'si boş olamaz");
+        }
+        if (!StringUtils.hasText(eskiSifre)) {
+            throw new BusinessException("Eski şifre boş olamaz");
+        }
+        if (!StringUtils.hasText(yeniSifre)) {
+            throw new BusinessException("Yeni şifre boş olamaz");
+        }
+        if (yeniSifre.length() < 6) {
+            throw new BusinessException("Yeni şifre en az 6 karakter olmalıdır");
+        }
+        
         Kullanici kullanici = kullaniciRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı, ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Kullanıcı", id));
         
         // Eski şifreyi doğrula
         if (!passwordEncoder.matches(eskiSifre, kullanici.getSifreHash())) {
-            throw new RuntimeException("Eski şifre yanlış");
+            throw new BusinessException("Eski şifre yanlış");
         }
         
         // Yeni şifreyi hash'le ve kaydet
@@ -167,23 +241,59 @@ public class KullaniciService {
      * Admin tarafından kullanıcı şifresini sıfırla
      */
     public void resetPassword(Long id, String yeniSifre) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kullanıcı ID'si boş olamaz");
+        }
+        if (!StringUtils.hasText(yeniSifre)) {
+            throw new BusinessException("Yeni şifre boş olamaz");
+        }
+        if (yeniSifre.length() < 6) {
+            throw new BusinessException("Yeni şifre en az 6 karakter olmalıdır");
+        }
+        
         Kullanici kullanici = kullaniciRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı, ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Kullanıcı", id));
         
         kullanici.setSifreHash(passwordEncoder.encode(yeniSifre));
         kullaniciRepository.save(kullanici);
     }
     
     /**
+     * Kullanıcı sayısını getir
+     */
+    @Transactional(readOnly = true)
+    public long getKullaniciCount() {
+        return kullaniciRepository.count();
+    }
+    
+    /**
+     * Son eklenen kullanıcıları getir
+     */
+    @Transactional(readOnly = true)
+    public List<Kullanici> getLatestKullanicilar(int limit) {
+        return kullaniciRepository.findTopByOrderByKayitTarihiDesc(limit);
+    }
+    
+    /**
      * Kullanıcı sil
      */
     public void deleteKullanici(Long id) {
-        if (!kullaniciRepository.existsById(id)) {
-            throw new RuntimeException("Kullanıcı bulunamadı, ID: " + id);
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Kullanıcı ID'si boş olamaz");
         }
         
-        // TODO: Bu kullanıcıya ait siparişler varsa silme işlemini engelle
-        // SiparisService ile kontrol edilebilir
+        // Kullanıcı var mı kontrol et
+        Kullanici kullanici = kullaniciRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Kullanıcı", id));
+        
+        // Bu kullanıcıya ait siparişler varsa silme işlemini engelle
+        // Sipariş sayısını repository üzerinden kontrol et
+        long siparisSayisi = siparisRepository.countByKullanici_Id(kullanici.getId());
+        if (siparisSayisi > 0) {
+            throw new BusinessException("Bu kullanıcıya ait siparişler bulunduğu için silinemez.");
+        }
         
         kullaniciRepository.deleteById(id);
     }
@@ -193,7 +303,9 @@ public class KullaniciService {
      */
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
-        return kullaniciRepository.existsByEmail(email);
+        // Email'i normalize et
+        String normalizedEmail = email != null ? email.trim().toLowerCase() : "";
+        return kullaniciRepository.existsByEmail(normalizedEmail);
     }
     
     /**

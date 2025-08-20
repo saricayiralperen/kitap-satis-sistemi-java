@@ -4,6 +4,9 @@ import com.alperen.kitapsatissistemi.entity.Kitap;
 import com.alperen.kitapsatissistemi.entity.Kategori;
 import com.alperen.kitapsatissistemi.service.KitapService;
 import com.alperen.kitapsatissistemi.service.KategoriService;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.DuplicateEntityException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -47,6 +50,8 @@ public class KitapController {
                 kitaplar = kitapService.getAllKitaplar();
             }
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -68,6 +73,8 @@ public class KitapController {
             }
             return kitap.map(ResponseEntity::ok)
                        .orElse(ResponseEntity.notFound().build());
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -82,6 +89,8 @@ public class KitapController {
         try {
             List<Kitap> kitaplar = kitapService.searchKitaplarByAd(q);
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -96,6 +105,8 @@ public class KitapController {
         try {
             List<Kitap> kitaplar = kitapService.searchKitaplarByYazar(q);
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -110,6 +121,8 @@ public class KitapController {
         try {
             List<Kitap> kitaplar = kitapService.getKitaplarByKategoriId(kategoriId);
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -125,6 +138,8 @@ public class KitapController {
         try {
             List<Kitap> kitaplar = kitapService.getKitaplarByFiyatAraligi(min, max);
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -139,6 +154,8 @@ public class KitapController {
         try {
             List<Kitap> kitaplar = kitapService.getEnPahaliKitaplar();
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -153,6 +170,8 @@ public class KitapController {
         try {
             List<Kitap> kitaplar = kitapService.getEnUcuzKitaplar();
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -167,6 +186,8 @@ public class KitapController {
         try {
             List<Kitap> kitaplar = kitapService.getKitaplarWithResim();
             return ResponseEntity.ok(kitaplar);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -181,7 +202,9 @@ public class KitapController {
         try {
             Kitap yeniKitap = kitapService.createKitap(kitap);
             return ResponseEntity.status(HttpStatus.CREATED).body(yeniKitap);
-        } catch (RuntimeException e) {
+        } catch (DuplicateEntityException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (BusinessException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -199,7 +222,11 @@ public class KitapController {
         try {
             Kitap guncellenenKitap = kitapService.updateKitap(id, kitapDetaylari);
             return ResponseEntity.ok(guncellenenKitap);
-        } catch (RuntimeException e) {
+        } catch (EntityNotFoundBusinessException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (DuplicateEntityException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (BusinessException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -216,7 +243,9 @@ public class KitapController {
         try {
             kitapService.deleteKitap(id);
             return ResponseEntity.ok().body("Kitap başarıyla silindi");
-        } catch (RuntimeException e) {
+        } catch (EntityNotFoundBusinessException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (BusinessException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -233,6 +262,8 @@ public class KitapController {
         try {
             boolean exists = kitapService.existsById(id);
             return ResponseEntity.ok(exists);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -247,6 +278,8 @@ public class KitapController {
         try {
             long count = kitapService.getKitapCountByKategoriId(kategoriId);
             return ResponseEntity.ok(count);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -261,6 +294,8 @@ public class KitapController {
         try {
             long count = kitapService.getKitapCount();
             return ResponseEntity.ok(count);
+        } catch (BusinessException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

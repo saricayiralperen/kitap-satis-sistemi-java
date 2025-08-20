@@ -1,6 +1,7 @@
 package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Kategori;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
 import com.alperen.kitapsatissistemi.service.KategoriService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -63,6 +64,8 @@ public class AdminKategorilerController {
             model.addAttribute("sortDir", sortDir);
             model.addAttribute("search", search);
             
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kategoriler yüklenirken hata oluştu: " + e.getMessage());
         }
@@ -139,6 +142,9 @@ public class AdminKategorilerController {
                 model.addAttribute("errorMessage", "Kategori bulunamadı.");
                 return "redirect:/admin/kategoriler";
             }
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/kategoriler";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kategori yüklenirken hata oluştu: " + e.getMessage());
             return "redirect:/admin/kategoriler";
@@ -171,6 +177,10 @@ public class AdminKategorilerController {
             kategoriService.save(kategori);
             redirectAttributes.addFlashAttribute("successMessage", "Kategori başarıyla güncellendi.");
             return "redirect:/admin/kategoriler";
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("title", "Kategori Düzenle");
+            return "admin/kategoriler/edit";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kategori güncellenirken hata oluştu: " + e.getMessage());
             model.addAttribute("title", "Kategori Düzenle");

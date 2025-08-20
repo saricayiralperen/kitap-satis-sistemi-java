@@ -214,8 +214,8 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="bi bi-book-fill"></i> AlperenBooks
+            <a class="navbar-brand" href="/" style="display: flex; align-items: center;">
+                <img th:src="@{/images/logo.svg}" alt="AlperenBooks" style="height: 35px; margin-right: 8px;">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -358,9 +358,12 @@
                                     <i class="bi bi-cart-plus"></i> Sepete Ekle
                                 </button>
                             </form>
-                            <button class="btn btn-add-wishlist" onclick="addToWishlist()">
-                                <i class="bi bi-heart"></i> Favorilere Ekle
-                            </button>
+                            <form action="/favoriler/ekle" method="post" class="d-inline favori-form">
+                                <input type="hidden" name="kitapId" th:value="${kitap.id}" />
+                                <button type="submit" class="btn btn-add-wishlist">
+                                    <i class="bi bi-heart"></i> Favorilere Ekle
+                                </button>
+                            </form>
                         </div>
                         
                         <!-- Additional Info -->
@@ -435,7 +438,7 @@
                     <p class="text-muted">En kaliteli kitapları en uygun fiyatlarla.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <p class="text-muted mb-0">&copy; 2024 AlperenBooks. Tüm hakları saklıdır.</p>
+                    <p class="text-muted mb-0">&copy; 2025 AlperenBooks. Tüm hakları saklıdır.</p>
                 </div>
             </div>
         </div>
@@ -519,6 +522,13 @@
                         body: formData
                     })
                     .then(response => {
+                        if (response.redirected && response.url.includes('/kullanici/login')) {
+                            // Giriş yapılmamış, login sayfasına yönlendir
+                            alert('Sepete ürün eklemek için önce giriş yapmalısınız!');
+                            window.location.href = '/kullanici/login';
+                            return;
+                        }
+                        
                         if (response.ok) {
                             // Başarılı ekleme
                             button.textContent = 'Eklendi!';
@@ -543,30 +553,58 @@
                         console.error('Sepete ekleme hatası:', error);
                         button.disabled = false;
                         button.textContent = originalText;
-                        alert('Sepete ekleme sırasında bir hata oluştu.');
+                        alert('Sepete ekleme sırasında bir hata oluştu. Lütfen önce giriş yapın.');
                     });
                 });
             });
-        });
-        
-        function addToCart() {
-            const quantity = document.getElementById('quantity').value;
-            const hiddenQuantity = document.getElementById('hiddenQuantity');
-            if (hiddenQuantity) {
-                hiddenQuantity.value = quantity;
+// Favori ekleme formu için event listener ekle
+            const favoriForm = document.querySelector('.favori-form');
+            if (favoriForm) {
+                favoriForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(favoriForm);
+                    const button = favoriForm.querySelector('button[type="submit"]');
+                    const originalText = button.innerHTML;
+                    
+                    button.disabled = true;
+                    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Ekleniyor...';
+                    
+                    fetch('/favoriler/ekle', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.redirected && response.url.includes('/kullanici/login')) {
+                            alert('Favorilere ürün eklemek için önce giriş yapmalısınız!');
+                            window.location.href = '/kullanici/login';
+                            return;
+                        }
+                        
+                        if (response.ok) {
+                            button.innerHTML = '<i class="bi bi-check-circle"></i> Eklendi!';
+                            button.classList.remove('btn-add-wishlist');
+                            button.classList.add('btn-success');
+                            
+                            setTimeout(() => {
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                                button.classList.remove('btn-success');
+                                button.classList.add('btn-add-wishlist');
+                            }, 2000);
+                        } else {
+                            throw new Error('Favorilere ekleme başarısız');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Favorilere ekleme hatası:', error);
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                        alert('Favorilere ekleme sırasında bir hata oluştu. Lütfen önce giriş yapın.');
+                    });
+                });
             }
-            const bookId = /*[[${kitap.id}]]*/ 0;
-            
-            // Sepete ekleme işlemi burada yapılacak
-            showToast('Kitap sepete eklendi!', 'success');
-        }
-        
-        function addToWishlist() {
-            const bookId = /*[[${kitap.id}]]*/ 0;
-            
-            // Favorilere ekleme işlemi burada yapılacak
-            showToast('Kitap favorilere eklendi!', 'info');
-        }
+        });
     </script>
 </body>
 </html>

@@ -2,6 +2,7 @@ package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Kitap;
 import com.alperen.kitapsatissistemi.entity.Kategori;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
 import com.alperen.kitapsatissistemi.service.KitapService;
 import com.alperen.kitapsatissistemi.service.KategoriService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,8 @@ public class AdminKitaplarController {
             model.addAttribute("sortDir", sortDir);
             model.addAttribute("search", search);
             
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kitaplar yüklenirken hata oluştu: " + e.getMessage());
         }
@@ -119,6 +122,8 @@ public class AdminKitaplarController {
             try {
                 List<Kategori> kategoriler = kategoriService.findAll();
                 model.addAttribute("kategoriler", kategoriler);
+            } catch (BusinessException e) {
+                model.addAttribute("errorMessage", e.getMessage());
             } catch (Exception e) {
                 model.addAttribute("errorMessage", "Kategoriler yüklenirken hata oluştu: " + e.getMessage());
             }
@@ -130,11 +135,25 @@ public class AdminKitaplarController {
             kitapService.save(kitap);
             redirectAttributes.addFlashAttribute("successMessage", "Kitap başarıyla eklendi.");
             return "redirect:/admin/kitaplar";
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            try {
+                List<Kategori> kategoriler = kategoriService.findAll();
+                model.addAttribute("kategoriler", kategoriler);
+            } catch (BusinessException ex) {
+                model.addAttribute("errorMessage", ex.getMessage());
+            } catch (Exception ex) {
+                model.addAttribute("errorMessage", "Kategoriler yüklenirken hata oluştu: " + ex.getMessage());
+            }
+            model.addAttribute("title", "Yeni Kitap Ekle");
+            return "admin/kitaplar/create";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kitap eklenirken hata oluştu: " + e.getMessage());
             try {
                 List<Kategori> kategoriler = kategoriService.findAll();
                 model.addAttribute("kategoriler", kategoriler);
+            } catch (BusinessException ex) {
+                model.addAttribute("errorMessage", ex.getMessage());
             } catch (Exception ex) {
                 model.addAttribute("errorMessage", "Kategoriler yüklenirken hata oluştu: " + ex.getMessage());
             }
@@ -166,8 +185,11 @@ public class AdminKitaplarController {
                 model.addAttribute("errorMessage", "Kitap bulunamadı.");
                 return "redirect:/admin/kitaplar";
             }
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/kitaplar";
         } catch (Exception e) {
-            model.addAttribute("errorMessage", "Kitap yüklenirken hata oluştu: " + e.getMessage());
+            model.addAttribute("errorMessage", "Kitap yüklenirken hata oluştu.");
             return "redirect:/admin/kitaplar";
         }
     }
@@ -204,11 +226,25 @@ public class AdminKitaplarController {
             kitapService.save(kitap);
             redirectAttributes.addFlashAttribute("successMessage", "Kitap başarıyla güncellendi.");
             return "redirect:/admin/kitaplar";
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            try {
+                List<Kategori> kategoriler = kategoriService.findAll();
+                model.addAttribute("kategoriler", kategoriler);
+            } catch (BusinessException ex) {
+                model.addAttribute("errorMessage", ex.getMessage());
+            } catch (Exception ex) {
+                model.addAttribute("errorMessage", "Kategoriler yüklenirken hata oluştu: " + ex.getMessage());
+            }
+            model.addAttribute("title", "Kitap Düzenle");
+            return "admin/kitaplar/edit";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Kitap güncellenirken hata oluştu: " + e.getMessage());
             try {
                 List<Kategori> kategoriler = kategoriService.findAll();
                 model.addAttribute("kategoriler", kategoriler);
+            } catch (BusinessException ex) {
+                model.addAttribute("errorMessage", ex.getMessage());
             } catch (Exception ex) {
                 model.addAttribute("errorMessage", "Kategoriler yüklenirken hata oluştu: " + ex.getMessage());
             }

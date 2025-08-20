@@ -39,44 +39,41 @@ public class Kitap {
     @Column(name = "resim_url", length = 500)
     private String resimUrl;
     
-    @NotNull(message = "Kategori zorunludur.")
-    @Column(name = "kategori_id", nullable = false)
-    private Long kategoriId;
-    
     @Min(value = 0, message = "Stok miktarı 0'dan küçük olamaz.")
     @Column(name = "stok_miktari", nullable = false)
     private Integer stokMiktari = 0;
     
+    @NotNull(message = "Kategori zorunludur.")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "kategori_id", insertable = false, updatable = false)
+    @JoinColumn(name = "kategori_id", nullable = false)
     private Kategori kategori;
     
     // Constructors
     public Kitap() {}
     
-    public Kitap(String ad, String yazar, BigDecimal fiyat, Long kategoriId) {
+    public Kitap(String ad, String yazar, BigDecimal fiyat, Kategori kategori) {
         this.ad = ad;
         this.yazar = yazar;
         this.fiyat = fiyat;
-        this.kategoriId = kategoriId;
+        this.kategori = kategori;
     }
     
-    public Kitap(String ad, String yazar, BigDecimal fiyat, String aciklama, Long kategoriId, String resimUrl) {
+    public Kitap(String ad, String yazar, BigDecimal fiyat, String aciklama, Kategori kategori, String resimUrl) {
         this.ad = ad;
         this.yazar = yazar;
         this.fiyat = fiyat;
         this.aciklama = aciklama;
-        this.kategoriId = kategoriId;
+        this.kategori = kategori;
         this.resimUrl = resimUrl;
         this.stokMiktari = 10; // Varsayılan stok
     }
     
-    public Kitap(String ad, String yazar, BigDecimal fiyat, String aciklama, Long kategoriId, String resimUrl, Integer stokMiktari) {
+    public Kitap(String ad, String yazar, BigDecimal fiyat, String aciklama, Kategori kategori, String resimUrl, Integer stokMiktari) {
         this.ad = ad;
         this.yazar = yazar;
         this.fiyat = fiyat;
         this.aciklama = aciklama;
-        this.kategoriId = kategoriId;
+        this.kategori = kategori;
         this.resimUrl = resimUrl;
         this.stokMiktari = stokMiktari;
     }
@@ -130,20 +127,16 @@ public class Kitap {
         this.resimUrl = resimUrl;
     }
     
-    public Long getKategoriId() {
-        return kategoriId;
-    }
-    
-    public void setKategoriId(Long kategoriId) {
-        this.kategoriId = kategoriId;
-    }
-    
     public Kategori getKategori() {
         return kategori;
     }
     
     public void setKategori(Kategori kategori) {
         this.kategori = kategori;
+    }
+    
+    public Long getKategoriId() {
+        return kategori != null ? kategori.getId() : null;
     }
     
     public Integer getStokMiktari() {
@@ -161,7 +154,7 @@ public class Kitap {
                 ", ad='" + ad + '\'' +
                 ", yazar='" + yazar + '\'' +
                 ", fiyat=" + fiyat +
-                ", kategoriId=" + kategoriId +
+                ", kategoriId=" + getKategoriId() +
                 '}';
     }
 }

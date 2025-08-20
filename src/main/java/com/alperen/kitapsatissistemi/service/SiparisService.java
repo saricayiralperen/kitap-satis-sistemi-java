@@ -2,6 +2,9 @@ package com.alperen.kitapsatissistemi.service;
 
 import com.alperen.kitapsatissistemi.entity.Siparis;
 import com.alperen.kitapsatissistemi.entity.SiparisDetay;
+import com.alperen.kitapsatissistemi.entity.Kullanici;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.repository.SiparisRepository;
 import com.alperen.kitapsatissistemi.repository.KullaniciRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -69,7 +73,7 @@ public class SiparisService {
      */
     @Transactional(readOnly = true)
     public List<Siparis> getSiparislerByKullaniciId(Long kullaniciId) {
-        return siparisRepository.findByKullaniciId(kullaniciId);
+        return siparisRepository.findByKullanici_Id(kullaniciId);
     }
     
     /**
@@ -77,7 +81,7 @@ public class SiparisService {
      */
     @Transactional(readOnly = true)
     public List<Siparis> getSiparislerByKullaniciIdWithDetails(Long kullaniciId) {
-        return siparisRepository.findByKullaniciIdWithDetails(kullaniciId);
+        return siparisRepository.findByKullanici_IdWithDetails(kullaniciId);
     }
     
     /**
@@ -105,17 +109,32 @@ public class SiparisService {
     }
     
     /**
-     * Yeni sipariş oluştur
+     * Sipariş oluştur
      */
     public Siparis createSiparis(Long kullaniciId, List<SiparisDetay> siparisDetaylari) {
-        // Kullanıcı var mı kontrol et
-        if (!kullaniciRepository.existsById(kullaniciId)) {
-            throw new RuntimeException("Kullanıcı bulunamadı, ID: " + kullaniciId);
+        // Input validation
+        if (kullaniciId == null) {
+            throw new BusinessException("Kullanıcı ID'si boş olamaz");
+        }
+        if (siparisDetaylari == null || siparisDetaylari.isEmpty()) {
+            throw new BusinessException("Sipariş detayları boş olamaz");
         }
         
-        // Sipariş detayları boş mu kontrol et
-        if (siparisDetaylari == null || siparisDetaylari.isEmpty()) {
-            throw new RuntimeException("Sipariş detayları boş olamaz");
+        // Kullanıcı var mı kontrol et ve kullanıcı nesnesini al
+        Kullanici kullanici = kullaniciRepository.findById(kullaniciId)
+            .orElseThrow(() -> new EntityNotFoundBusinessException("Kullanıcı", kullaniciId));
+        
+        // Sipariş detaylarını validate et
+        for (SiparisDetay detay : siparisDetaylari) {
+            if (detay == null) {
+                throw new BusinessException("Sipariş detayı null olamaz");
+            }
+            if (detay.getAdet() == null || detay.getAdet() <= 0) {
+                throw new BusinessException("Sipariş detayı adedi pozitif olmalıdır");
+            }
+            if (detay.getFiyat() == null || detay.getFiyat().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("Sipariş detayı fiyatı pozitif olmalıdır");
+            }
         }
         
         // Toplam tutarı hesapla
@@ -124,11 +143,7 @@ public class SiparisService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
         // Sipariş oluştur
-        Siparis siparis = new Siparis();
-        siparis.setKullaniciId(kullaniciId);
-        siparis.setSiparisTarihi(LocalDateTime.now());
-        siparis.setToplamTutar(toplamTutar);
-        siparis.setDurum("Beklemede");
+        Siparis siparis = new Siparis(kullanici, toplamTutar);
         
         // Sipariş detaylarını ayarla
         for (SiparisDetay detay : siparisDetaylari) {
@@ -143,33 +158,59 @@ public class SiparisService {
      * Sipariş durumunu güncelle
      */
     public Siparis updateSiparisDurum(Long id, String yeniDurum) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Sipariş ID'si boş olamaz");
+        }
+        if (!StringUtils.hasText(yeniDurum)) {
+            throw new BusinessException("Yeni durum boş olamaz");
+        }
+        
         return siparisRepository.findById(id)
                 .map(siparis -> {
-                    siparis.setDurum(yeniDurum);
+                    siparis.setDurum(yeniDurum.trim());
                     return siparisRepository.save(siparis);
                 })
-                .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı, ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Sipariş", id));
     }
     
     /**
      * Sipariş güncelle
      */
     public Siparis updateSiparis(Long id, Siparis siparisDetaylari) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Sipariş ID'si boş olamaz");
+        }
+        if (siparisDetaylari == null) {
+            throw new BusinessException("Sipariş detayları boş olamaz");
+        }
+        
         return siparisRepository.findById(id)
                 .map(siparis -> {
-                    siparis.setToplamTutar(siparisDetaylari.getToplamTutar());
-                    siparis.setDurum(siparisDetaylari.getDurum());
+                    if (siparisDetaylari.getToplamTutar() != null) {
+                        siparis.setToplamTutar(siparisDetaylari.getToplamTutar());
+                    }
+                    if (StringUtils.hasText(siparisDetaylari.getDurum())) {
+                        siparis.setDurum(siparisDetaylari.getDurum().trim());
+                    }
                     return siparisRepository.save(siparis);
                 })
-                .orElseThrow(() -> new RuntimeException("Sipariş bulunamadı, ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundBusinessException("Sipariş", id));
     }
     
     /**
      * Sipariş sil
      */
     public void deleteSiparis(Long id) {
+        // Input validation
+        if (id == null) {
+            throw new BusinessException("Sipariş ID'si boş olamaz");
+        }
+        
+        // Sipariş var mı kontrol et
         if (!siparisRepository.existsById(id)) {
-            throw new RuntimeException("Sipariş bulunamadı, ID: " + id);
+            throw new EntityNotFoundBusinessException("Sipariş", id);
         }
         
         siparisRepository.deleteById(id);
@@ -188,7 +229,7 @@ public class SiparisService {
      */
     @Transactional(readOnly = true)
     public long getSiparisCountByKullaniciId(Long kullaniciId) {
-        return siparisRepository.countByKullaniciId(kullaniciId);
+        return siparisRepository.countByKullanici_Id(kullaniciId);
     }
     
     /**
@@ -204,16 +245,16 @@ public class SiparisService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getTotalSpentByKullaniciId(Long kullaniciId) {
-        BigDecimal total = siparisRepository.getTotalSpentByKullaniciId(kullaniciId);
+        BigDecimal total = siparisRepository.findToplamHarcamaByKullanici_Id(kullaniciId);
         return total != null ? total : BigDecimal.ZERO;
     }
-    
+
     /**
      * Günlük satış istatistiklerini getir
      */
     @Transactional(readOnly = true)
     public List<Object[]> getDailySalesStats() {
-        return siparisRepository.getDailySalesStats();
+        return siparisRepository.findGunlukSatisIstatistikleri();
     }
     
     /**
@@ -254,6 +295,14 @@ public class SiparisService {
     @Transactional(readOnly = true)
     public long getSiparisCount() {
         return siparisRepository.count();
+    }
+    
+    /**
+     * Son eklenen siparişleri getir
+     */
+    @Transactional(readOnly = true)
+    public List<Siparis> getLatestSiparisler(int limit) {
+        return siparisRepository.findTopByOrderByIdDesc(limit);
     }
     
     // Admin controller için ek metodlar

@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title th:text="${title != null ? title + ' - AlperenBooks' : 'AlperenBooks'}">AlperenBooks</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/lib/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" th:href="@{/css/site.css}">
     <style>
         :root {
@@ -163,8 +163,8 @@
     <header th:fragment="navbar">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand fw-bold" th:href="@{/}" style="color: #667eea; font-size: 1.5rem;">
-                    <i class="bi bi-book-half" style="color: #764ba2;"></i> AlperenBooks
+                <a class="navbar-brand fw-bold" th:href="@{/}">
+                    <i class="bi bi-book"></i> AlperenBooks
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -271,18 +271,18 @@
                 <div class="col-md-4">
                     <h6 class="fw-bold mb-3">İletişim</h6>
                     <p class="text-muted mb-1"><i class="bi bi-geo-alt"></i> İstanbul, Türkiye</p>
-                    <p class="text-muted mb-1"><i class="bi bi-telephone"></i> +90 (212) 123 45 67</p>
-                    <p class="text-muted mb-1"><i class="bi bi-envelope"></i> info@alperenbooks.com</p>
+                    <p class="text-muted mb-1"><i class="bi bi-telephone"></i> +905076152645</p>
+                    <p class="text-muted mb-1"><i class="bi bi-envelope"></i> alperensaricayir@gmail.com</p>
                 </div>
             </div>
             <hr>
             <div class="text-center py-3">
-                <p class="text-muted mb-0">&copy; 2024 AlperenBooks. Tüm hakları saklıdır. | Alperen Sarıçayır tarafından geliştirilmiştir.</p>
+                <p class="text-muted mb-0">&copy; 2025 AlperenBooks. Tüm hakları saklıdır. | Alperen Sarıçayır tarafından geliştirilmiştir.</p>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/site.js}"></script>
     <script>
         // Tema değiştirme fonksiyonu
@@ -348,6 +348,13 @@
                         body: formData
                     })
                     .then(response => {
+                        if (response.redirected && response.url.includes('/kullanici/login')) {
+                            // Giriş yapılmamış, login sayfasına yönlendir
+                            alert('Sepete ürün eklemek için önce giriş yapmalısınız!');
+                            window.location.href = '/kullanici/login';
+                            return;
+                        }
+                        
                         if (response.ok) {
                             // Başarılı ekleme
                             button.textContent = 'Eklendi!';
@@ -372,7 +379,7 @@
                         console.error('Sepete ekleme hatası:', error);
                         button.disabled = false;
                         button.textContent = originalText;
-                        alert('Sepete ekleme sırasında bir hata oluştu.');
+                        alert('Sepete ekleme sırasında bir hata oluştu. Lütfen önce giriş yapın.');
                     });
                 });
             });

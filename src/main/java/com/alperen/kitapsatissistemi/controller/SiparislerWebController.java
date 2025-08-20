@@ -1,6 +1,8 @@
 package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Siparis;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.service.SiparisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -37,6 +39,8 @@ public class SiparislerWebController {
             List<Siparis> siparisler = siparisService.getSiparislerByKullaniciIdWithDetails(kullaniciId);
             model.addAttribute("siparisler", siparisler);
             model.addAttribute("title", "Siparişlerim");
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Siparişler yüklenirken hata oluştu: " + e.getMessage());
         }
@@ -69,6 +73,9 @@ public class SiparislerWebController {
             } else {
                 return "redirect:/siparisler";
             }
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "siparisler/index";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Sipariş detayları yüklenirken hata oluştu: " + e.getMessage());
             return "siparisler/index";

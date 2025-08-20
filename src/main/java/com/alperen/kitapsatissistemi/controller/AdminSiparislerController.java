@@ -1,6 +1,8 @@
 package com.alperen.kitapsatissistemi.controller;
 
 import com.alperen.kitapsatissistemi.entity.Siparis;
+import com.alperen.kitapsatissistemi.exception.BusinessException;
+import com.alperen.kitapsatissistemi.exception.EntityNotFoundBusinessException;
 import com.alperen.kitapsatissistemi.service.SiparisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -61,6 +63,8 @@ public class AdminSiparislerController {
             model.addAttribute("sortDir", sortDir);
             model.addAttribute("durum", durum);
             
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Siparişler yüklenirken hata oluştu: " + e.getMessage());
         }
@@ -90,6 +94,9 @@ public class AdminSiparislerController {
                 model.addAttribute("errorMessage", "Sipariş bulunamadı.");
                 return "redirect:/admin/siparisler";
             }
+        } catch (BusinessException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/siparisler";
         } catch (Exception e) {
             model.addAttribute("errorMessage", "Sipariş yüklenirken hata oluştu: " + e.getMessage());
             return "redirect:/admin/siparisler";
@@ -120,6 +127,8 @@ public class AdminSiparislerController {
             } else {
                 redirectAttributes.addFlashAttribute("errorMessage", "Sipariş bulunamadı.");
             }
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Sipariş durumu güncellenirken hata oluştu: " + e.getMessage());
         }
@@ -141,6 +150,8 @@ public class AdminSiparislerController {
         try {
             siparisService.deleteById(id);
             redirectAttributes.addFlashAttribute("successMessage", "Sipariş başarıyla silindi.");
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Sipariş silinirken hata oluştu: " + e.getMessage());
         }

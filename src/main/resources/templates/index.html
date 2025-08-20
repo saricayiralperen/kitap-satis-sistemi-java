@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ana Sayfa - AlperenBooks</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/lib/bootstrap-icons/bootstrap-icons.css">
     <link rel="stylesheet" th:href="@{/css/site.css}">
     <style>
         :root {
@@ -184,8 +184,8 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
-            <a class="navbar-brand fw-bold" th:href="@{/}" style="color: #667eea; font-size: 1.5rem;">
-                <i class="bi bi-book-half" style="color: #764ba2;"></i> AlperenBooks
+            <a class="navbar-brand fw-bold" th:href="@{/}">
+                <i class="bi bi-book"></i> AlperenBooks
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -453,8 +453,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h5 class="fw-bold mb-3">
-                        <i class="bi bi-book-half" style="color: #764ba2;"></i> AlperenBooks
+                    <h5 class="fw-bold mb-3" style="display: flex; align-items: center;">
+                        <img th:src="@{/images/logo.svg}" alt="AlperenBooks" style="height: 30px; margin-right: 8px;">
                     </h5>
                     <p class="text-muted">Kitap dünyasının dijital adresi. En kaliteli kitapları en uygun fiyatlarla.</p>
                     <div class="d-flex gap-3">
@@ -488,12 +488,12 @@
             </div>
             <hr>
             <div class="text-center py-3">
-                <p class="text-muted mb-0">&copy; 2024 AlperenBooks. Tüm hakları saklıdır. | Alperen Sarıçayır tarafından geliştirilmiştir.</p>
+                <p class="text-muted mb-0">&copy; 2025 AlperenBooks. Tüm hakları saklıdır. | Alperen Sarıçayır tarafından geliştirilmiştir.</p>
             </div>
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script>
         // Tema değiştirme fonksiyonu
         function toggleTheme() {

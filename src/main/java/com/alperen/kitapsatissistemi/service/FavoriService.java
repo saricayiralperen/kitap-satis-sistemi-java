@@ -1,6 +1,8 @@
 package com.alperen.kitapsatissistemi.service;
 
 import com.alperen.kitapsatissistemi.entity.Favori;
+import com.alperen.kitapsatissistemi.entity.Kullanici;
+import com.alperen.kitapsatissistemi.entity.Kitap;
 import com.alperen.kitapsatissistemi.repository.FavoriRepository;
 import com.alperen.kitapsatissistemi.repository.KullaniciRepository;
 import com.alperen.kitapsatissistemi.repository.KitapRepository;
@@ -62,7 +64,7 @@ public class FavoriService {
      */
     @Transactional(readOnly = true)
     public List<Favori> getFavorilerByKullaniciId(Long kullaniciId) {
-        return favoriRepository.findByKullaniciId(kullaniciId);
+        return favoriRepository.findByKullanici_Id(kullaniciId);
     }
     
     /**
@@ -70,7 +72,7 @@ public class FavoriService {
      */
     @Transactional(readOnly = true)
     public List<Favori> getFavorilerByKullaniciIdWithDetails(Long kullaniciId) {
-        return favoriRepository.findByKullaniciIdWithKitap(kullaniciId);
+        return favoriRepository.findByKullanici_IdWithKitap(kullaniciId);
     }
     
     /**
@@ -78,7 +80,7 @@ public class FavoriService {
      */
     @Transactional(readOnly = true)
     public List<Favori> getFavorilerByKitapId(Long kitapId) {
-        return favoriRepository.findByKitapId(kitapId);
+        return favoriRepository.findByKitap_Id(kitapId);
     }
     
     /**
@@ -86,7 +88,7 @@ public class FavoriService {
      */
     @Transactional(readOnly = true)
     public List<Favori> getFavorilerByKitapIdWithDetails(Long kitapId) {
-        return favoriRepository.findByKitapIdWithKullanici(kitapId);
+        return favoriRepository.findByKitap_IdWithKullanici(kitapId);
     }
     
     /**
@@ -94,23 +96,19 @@ public class FavoriService {
      */
     public Favori addFavori(Long kullaniciId, Long kitapId) {
         // Kullanıcı var mı kontrol et
-        if (!kullaniciRepository.existsById(kullaniciId)) {
-            throw new RuntimeException("Kullanıcı bulunamadı, ID: " + kullaniciId);
-        }
+        Kullanici kullanici = kullaniciRepository.findById(kullaniciId)
+            .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı, ID: " + kullaniciId));
         
         // Kitap var mı kontrol et
-        if (!kitapRepository.existsById(kitapId)) {
-            throw new RuntimeException("Kitap bulunamadı, ID: " + kitapId);
-        }
+        Kitap kitap = kitapRepository.findById(kitapId)
+            .orElseThrow(() -> new RuntimeException("Kitap bulunamadı, ID: " + kitapId));
         
         // Zaten favori olarak eklenmiş mi kontrol et
-        if (favoriRepository.existsByKullaniciIdAndKitapId(kullaniciId, kitapId)) {
+        if (favoriRepository.existsByKullanici_IdAndKitap_Id(kullaniciId, kitapId)) {
             throw new RuntimeException("Bu kitap zaten favorilerinizde mevcut");
         }
         
-        Favori favori = new Favori();
-        favori.setKullaniciId(kullaniciId);
-        favori.setKitapId(kitapId);
+        Favori favori = new Favori(kullanici, kitap);
         
         return favoriRepository.save(favori);
     }
@@ -130,7 +128,7 @@ public class FavoriService {
      * Kullanıcı ve kitap ID'sine göre favori sil
      */
     public void deleteFavoriByKullaniciAndKitap(Long kullaniciId, Long kitapId) {
-        Optional<Favori> favoriOpt = favoriRepository.findByKullaniciIdAndKitapId(kullaniciId, kitapId);
+        Optional<Favori> favoriOpt = favoriRepository.findByKullanici_IdAndKitap_Id(kullaniciId, kitapId);
         
         if (favoriOpt.isPresent()) {
             favoriRepository.delete(favoriOpt.get());
@@ -143,7 +141,7 @@ public class FavoriService {
      * Kullanıcının tüm favorilerini sil
      */
     public void deleteAllFavorilerByKullaniciId(Long kullaniciId) {
-        List<Favori> favoriler = favoriRepository.findByKullaniciId(kullaniciId);
+        List<Favori> favoriler = favoriRepository.findByKullanici_Id(kullaniciId);
         favoriRepository.deleteAll(favoriler);
     }
     
@@ -151,7 +149,7 @@ public class FavoriService {
      * Kitabın tüm favorilerini sil
      */
     public void deleteAllFavorilerByKitapId(Long kitapId) {
-        List<Favori> favoriler = favoriRepository.findByKitapId(kitapId);
+        List<Favori> favoriler = favoriRepository.findByKitap_Id(kitapId);
         favoriRepository.deleteAll(favoriler);
     }
     
@@ -168,7 +166,7 @@ public class FavoriService {
      */
     @Transactional(readOnly = true)
     public boolean existsByKullaniciIdAndKitapId(Long kullaniciId, Long kitapId) {
-        return favoriRepository.existsByKullaniciIdAndKitapId(kullaniciId, kitapId);
+        return favoriRepository.existsByKullanici_IdAndKitap_Id(kullaniciId, kitapId);
     }
     
     /**
@@ -176,7 +174,7 @@ public class FavoriService {
      */
     @Transactional(readOnly = true)
     public long getFavoriCountByKullaniciId(Long kullaniciId) {
-        return favoriRepository.countByKullaniciId(kullaniciId);
+        return favoriRepository.countByKullanici_Id(kullaniciId);
     }
     
     /**
@@ -184,7 +182,7 @@ public class FavoriService {
      */
     @Transactional(readOnly = true)
     public long getFavoriCountByKitapId(Long kitapId) {
-        return favoriRepository.countByKitapId(kitapId);
+        return favoriRepository.countByKitap_Id(kitapId);
     }
     
     /**
@@ -232,14 +230,14 @@ public class FavoriService {
      * Kullanıcı ID'sine göre tüm favorileri sil
      */
     public void deleteByKullaniciId(Long kullaniciId) {
-        favoriRepository.deleteByKullaniciId(kullaniciId);
+        favoriRepository.deleteByKullanici_Id(kullaniciId);
     }
     
     /**
      * Kitap ID'sine göre tüm favorileri sil
      */
     public void deleteByKitapId(Long kitapId) {
-        favoriRepository.deleteByKitapId(kitapId);
+        favoriRepository.deleteByKitap_Id(kitapId);
     }
     
     /**

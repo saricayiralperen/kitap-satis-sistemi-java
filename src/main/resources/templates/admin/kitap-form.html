@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org" th:replace="~{admin/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title th:text="${kitap.id != null ? 'Kitap Düzenle' : 'Yeni Kitap'}">Kitap Form</title>
+</head>
+<body>
+    <main>
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">
+                <i class="fas fa-book"></i> 
+                <span th:text="${kitap.id != null ? 'Kitap Düzenle' : 'Yeni Kitap'}">Kitap Form</span>
+                <small class="text-muted" th:if="${kitap.id != null}" th:text="'#' + ${kitap.id}">#1</small>
+            </h1>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="btn-group me-2">
+                    <a th:href="@{/admin/kitaplar}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri Dön
+                    </a>
+                    <a th:if="${kitap.id != null}" th:href="@{/admin/kitaplar/{id}(id=${kitap.id})}" class="btn btn-outline-info">
+                        <i class="fas fa-eye"></i> Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${successMessage}">İşlem başarılı</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span th:text="${errorMessage}">Hata oluştu</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div class="row">
+            <!-- Form -->
+            <div class="col-lg-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-edit"></i> Kitap Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{${kitap.id != null ? '/admin/kitaplar/' + kitap.id : '/admin/kitaplar'}}" 
+                              th:object="${kitap}" method="post" novalidate>
+                            
+                            <input type="hidden" th:if="${kitap.id != null}" name="_method" value="put">
+                            <input type="hidden" th:field="*{id}">
+                            
+                            <!-- Basic Information -->
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label for="ad" class="form-label">
+                                        <i class="fas fa-book text-primary"></i> Kitap Adı *
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('ad')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="ad" 
+                                           th:field="*{ad}" 
+                                           placeholder="Kitap adını giriniz"
+                                           required>
+                                    <div th:if="${#fields.hasErrors('ad')}" class="invalid-feedback">
+                                        <span th:errors="*{ad}">Ad hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="kategoriId" class="form-label">
+                                        <i class="fas fa-tag text-info"></i> Kategori
+                                    </label>
+                                    <select class="form-select" 
+                                            th:class="${#fields.hasErrors('kategori')} ? 'form-select is-invalid' : 'form-select'"
+                                            id="kategoriId" 
+                                            name="kategoriId">
+                                        <option value="">Kategori Seçiniz</option>
+                                        <option th:each="kategori : ${kategoriler}" 
+                                                th:value="${kategori.id}" 
+                                                th:text="${kategori.ad}"
+                                                th:selected="${kitap.kategori != null and kitap.kategori.id == kategori.id}">Kategori</option>
+                                    </select>
+                                    <div th:if="${#fields.hasErrors('kategori')}" class="invalid-feedback">
+                                        <span th:errors="*{kategori}">Kategori hatası</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="yazar" class="form-label">
+                                        <i class="fas fa-user text-secondary"></i> Yazar *
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('yazar')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="yazar" 
+                                           th:field="*{yazar}" 
+                                           placeholder="Yazar adını giriniz"
+                                           required>
+                                    <div th:if="${#fields.hasErrors('yazar')}" class="invalid-feedback">
+                                        <span th:errors="*{yazar}">Yazar hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="yayinevi" class="form-label">
+                                        <i class="fas fa-building text-warning"></i> Yayınevi
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('yayinevi')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="yayinevi" 
+                                           th:field="*{yayinevi}" 
+                                           placeholder="Yayınevi adını giriniz">
+                                    <div th:if="${#fields.hasErrors('yayinevi')}" class="invalid-feedback">
+                                        <span th:errors="*{yayinevi}">Yayınevi hatası</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="aciklama" class="form-label">
+                                        <i class="fas fa-align-left text-info"></i> Açıklama
+                                    </label>
+                                    <textarea class="form-control" 
+                                              th:class="${#fields.hasErrors('aciklama')} ? 'form-control is-invalid' : 'form-control'"
+                                              id="aciklama" 
+                                              th:field="*{aciklama}" 
+                                              rows="4" 
+                                              placeholder="Kitap açıklamasını giriniz"></textarea>
+                                    <div th:if="${#fields.hasErrors('aciklama')}" class="invalid-feedback">
+                                        <span th:errors="*{aciklama}">Açıklama hatası</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Price and Stock -->
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="fiyat" class="form-label">
+                                        <i class="fas fa-money-bill-wave text-success"></i> Fiyat (₺) *
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('fiyat')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="fiyat" 
+                                           th:field="*{fiyat}" 
+                                           placeholder="0.00"
+                                           step="0.01"
+                                           min="0"
+                                           required>
+                                    <div th:if="${#fields.hasErrors('fiyat')}" class="invalid-feedback">
+                                        <span th:errors="*{fiyat}">Fiyat hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="stokMiktari" class="form-label">
+                                        <i class="fas fa-boxes text-warning"></i> Stok Miktarı *
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('stokMiktari')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="stokMiktari" 
+                                           th:field="*{stokMiktari}" 
+                                           placeholder="0"
+                                           min="0"
+                                           required>
+                                    <div th:if="${#fields.hasErrors('stokMiktari')}" class="invalid-feedback">
+                                        <span th:errors="*{stokMiktari}">Stok hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 mb-3">
+                                    <label for="sayfaSayisi" class="form-label">
+                                        <i class="fas fa-file-alt text-secondary"></i> Sayfa Sayısı
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('sayfaSayisi')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="sayfaSayisi" 
+                                           th:field="*{sayfaSayisi}" 
+                                           placeholder="0"
+                                           min="1">
+                                    <div th:if="${#fields.hasErrors('sayfaSayisi')}" class="invalid-feedback">
+                                        <span th:errors="*{sayfaSayisi}">Sayfa sayısı hatası</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- ISBN and Barcode -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="isbn" class="form-label">
+                                        <i class="fas fa-barcode text-dark"></i> ISBN
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('isbn')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="isbn" 
+                                           th:field="*{isbn}" 
+                                           placeholder="978-0-123456-78-9">
+                                    <div th:if="${#fields.hasErrors('isbn')}" class="invalid-feedback">
+                                        <span th:errors="*{isbn}">ISBN hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="barkod" class="form-label">
+                                        <i class="fas fa-qrcode text-dark"></i> Barkod
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('barkod')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="barkod" 
+                                           th:field="*{barkod}" 
+                                           placeholder="123456789012">
+                                    <div th:if="${#fields.hasErrors('barkod')}" class="invalid-feedback">
+                                        <span th:errors="*{barkod}">Barkod hatası</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Details -->
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label for="yayinTarihi" class="form-label">
+                                        <i class="fas fa-calendar text-info"></i> Yayın Tarihi
+                                    </label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('yayinTarihi')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="yayinTarihi" 
+                                           th:field="*{yayinTarihi}">
+                                    <div th:if="${#fields.hasErrors('yayinTarihi')}" class="invalid-feedback">
+                                        <span th:errors="*{yayinTarihi}">Yayın tarihi hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3">
+                                    <label for="dil" class="form-label">
+                                        <i class="fas fa-language text-primary"></i> Dil
+                                    </label>
+                                    <select class="form-select" 
+                                            th:class="${#fields.hasErrors('dil')} ? 'form-select is-invalid' : 'form-select'"
+                                            id="dil" 
+                                            th:field="*{dil}">
+                                        <option value="">Dil Seçiniz</option>
+                                        <option value="Türkçe">Türkçe</option>
+                                        <option value="İngilizce">İngilizce</option>
+                                        <option value="Almanca">Almanca</option>
+                                        <option value="Fransızca">Fransızca</option>
+                                        <option value="İspanyolca">İspanyolca</option>
+                                        <option value="İtalyanca">İtalyanca</option>
+                                        <option value="Rusça">Rusça</option>
+                                        <option value="Arapça">Arapça</option>
+                                        <option value="Diğer">Diğer</option>
+                                    </select>
+                                    <div th:if="${#fields.hasErrors('dil')}" class="invalid-feedback">
+                                        <span th:errors="*{dil}">Dil hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3">
+                                    <label for="kapakTipi" class="form-label">
+                                        <i class="fas fa-book-open text-warning"></i> Kapak Tipi
+                                    </label>
+                                    <select class="form-select" 
+                                            th:class="${#fields.hasErrors('kapakTipi')} ? 'form-select is-invalid' : 'form-select'"
+                                            id="kapakTipi" 
+                                            th:field="*{kapakTipi}">
+                                        <option value="">Kapak Tipi Seçiniz</option>
+                                        <option value="Karton Kapak">Karton Kapak</option>
+                                        <option value="Ciltsiz">Ciltsiz</option>
+                                        <option value="Ciltli">Ciltli</option>
+                                        <option value="Plastik Kapak">Plastik Kapak</option>
+                                    </select>
+                                    <div th:if="${#fields.hasErrors('kapakTipi')}" class="invalid-feedback">
+                                        <span th:errors="*{kapakTipi}">Kapak tipi hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3 mb-3">
+                                    <label for="agirlik" class="form-label">
+                                        <i class="fas fa-weight text-secondary"></i> Ağırlık (gr)
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('agirlik')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="agirlik" 
+                                           th:field="*{agirlik}" 
+                                           placeholder="0"
+                                           min="0">
+                                    <div th:if="${#fields.hasErrors('agirlik')}" class="invalid-feedback">
+                                        <span th:errors="*{agirlik}">Ağırlık hatası</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="boyutlar" class="form-label">
+                                        <i class="fas fa-ruler text-info"></i> Boyutlar
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           th:class="${#fields.hasErrors('boyutlar')} ? 'form-control is-invalid' : 'form-control'"
+                                           id="boyutlar" 
+                                           th:field="*{boyutlar}" 
+                                           placeholder="13.5x21 cm">
+                                    <div th:if="${#fields.hasErrors('boyutlar')}" class="invalid-feedback">
+                                        <span th:errors="*{boyutlar}">Boyutlar hatası</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-toggle-on text-success"></i> Durum
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               id="aktif" 
+                                               th:field="*{aktif}"
+                                               th:checked="${kitap.aktif != null ? kitap.aktif : true}">
+                                        <label class="form-check-label" for="aktif">
+                                            Kitap Aktif
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Pasif kitaplar kullanıcılara gösterilmez.</div>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-save"></i> 
+                                        <span th:text="${kitap.id != null ? 'Güncelle' : 'Kaydet'}">Kaydet</span>
+                                    </button>
+                                    <a th:href="@{/admin/kitaplar}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> İptal
+                                    </a>
+                                </div>
+                                
+                                <div th:if="${kitap.id != null}">
+                                    <button type="button" class="btn btn-danger" 
+                                            th:onclick="'confirmDelete(' + ${kitap.id} + ', \'' + ${kitap.ad} + '\', ' + ${toplamSatisSayisi ?: 0} + ')'">
+                                        <i class="fas fa-trash"></i> Sil
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Info Panel -->
+            <div class="col-lg-4">
+                <!-- Form Help -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-info">
+                            <i class="fas fa-info-circle"></i> Yardım
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6><i class="fas fa-asterisk text-danger"></i> Zorunlu Alanlar</h6>
+                            <p class="small text-muted mb-2">Kitap Adı, Yazar, Fiyat ve Stok Miktarı alanları zorunludur.</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6><i class="fas fa-barcode text-dark"></i> ISBN</h6>
+                            <p class="small text-muted mb-2">Uluslararası Standart Kitap Numarası. Örnek: 978-0-123456-78-9</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6><i class="fas fa-money-bill-wave text-success"></i> Fiyat</h6>
+                            <p class="small text-muted mb-2">Kitabın satış fiyatını Türk Lirası cinsinden giriniz.</p>
+                        </div>
+                        
+                        <div>
+                            <h6><i class="fas fa-boxes text-warning"></i> Stok</h6>
+                            <p class="small text-muted mb-0">Mevcut stok miktarını giriniz. 0 olursa kitap "Tükendi" olarak görünür.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Book Stats (for edit mode) -->
+                <div th:if="${kitap.id != null}" class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-chart-bar"></i> İstatistikler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h4 class="text-success mb-0" th:text="${kitap.fiyat} + ' ₺'">0 ₺</h4>
+                                    <small class="text-muted">Fiyat</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="mb-0" th:classappend="${kitap.stokMiktari > 10} ? 'text-success' : (${kitap.stokMiktari > 0} ? 'text-warning' : 'text-danger')" th:text="${kitap.stokMiktari}">0</h4>
+                                <small class="text-muted">Stok</small>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="small text-muted">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Oluşturma:</span>
+                                <span th:text="${#temporals.format(kitap.olusturmaTarihi, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </div>
+                            <div th:if="${kitap.guncellemeTarihi != null}" class="d-flex justify-content-between mb-1">
+                                <span>Güncelleme:</span>
+                                <span th:text="${#temporals.format(kitap.guncellemeTarihi, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Toplam Satış:</span>
+                                <span th:text="${toplamSatisSayisi ?: 0}">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div th:if="${kitap.id != null}" class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-warning">
+                            <i class="fas fa-bolt"></i> Hızlı İşlemler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{/admin/kitaplar/{id}(id=${kitap.id})}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-eye"></i> Detayları Görüntüle
+                            </a>
+                            <a th:href="@{/admin/siparisler(kitapId=${kitap.id})}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-shopping-cart"></i> Siparişleri Listele
+                            </a>
+                            <a th:href="@{/admin/kitaplar/yeni(kategoriId=${kitap.kategori?.id})}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-plus"></i> Benzer Kitap Ekle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">
+                            <i class="fas fa-exclamation-triangle text-warning"></i> Kitap Sil
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong id="deleteKitapAd"></strong> kitabını silmek istediğinizden emin misiniz?</p>
+                        <div id="deleteWarning" class="alert alert-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Uyarı:</strong> Bu kitap için <span id="satisSayisi"></span> sipariş bulunmaktadır. 
+                            Kitap silindiğinde bu siparişler etkilenebilir.
+                        </div>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Dikkat:</strong> Bu işlem geri alınamaz.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <form id="deleteForm" method="post" style="display: inline;">
+                            <input type="hidden" name="_method" value="delete">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        function confirmDelete(kitapId, kitapAd, satisSayisi) {
+            const deleteForm = document.getElementById('deleteForm');
+            const deleteKitapAd = document.getElementById('deleteKitapAd');
+            const deleteWarning = document.getElementById('deleteWarning');
+            const satisSayisiSpan = document.getElementById('satisSayisi');
+            
+            deleteForm.action = '/admin/kitaplar/' + kitapId;
+            deleteKitapAd.textContent = kitapAd;
+            
+            if (satisSayisi > 0) {
+                satisSayisiSpan.textContent = satisSayisi;
+                deleteWarning.style.display = 'block';
+            } else {
+                deleteWarning.style.display = 'none';
+            }
+            
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+        
+        // Form validation
+        (function() {
+            'use strict';
+            window.addEventListener('load', function() {
+                var forms = document.getElementsByClassName('needs-validation');
+                var validation = Array.prototype.filter.call(forms, function(form) {
+                    form.addEventListener('submit', function(event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+</body>
+</html>
